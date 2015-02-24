@@ -228,7 +228,7 @@ function swapGrid(grid)
     //console.log("new:")
     //printGrid(newgrid)
 
-    return newgrid
+    return newgrid;
 }
 
 function click(event)
@@ -248,7 +248,7 @@ function click(event)
             if (fieldArray[fieldX][fieldY] === 0 && money >= towerPrice[selectedTower])
             {
                 money -= towerPrice[selectedTower];
-                changeMoney()
+                changeMoney();
                 if (selectedInField){selectedInField.kill();}
                 towerBase = guns.create(placeX,placeY, 'guns');
                 towerBase.frame = 2;
@@ -282,8 +282,8 @@ function click(event)
     if (event.x >800 && event.x<1000 && event.y>600 && event.y<650 )
     {
         //Start button was pressed
-        console.log("start pressed")
-        running = true
+        console.log("start pressed");
+        running = true;
     }
     if (event.x >800 && event.x<1000 && event.y>550 && event.y<600 )
     {
@@ -292,29 +292,29 @@ function click(event)
         if(game.paused)
         {
             game.paused = false;
-            reset.destroy()
+            reset.destroy();
             pauseState = false;
-            console.log("games continue")
+            console.log("games continue");
         }
         else
         {
             game.paused = true;
-            pauseState = true
+            pauseState = true;
             reset = game.add.sprite(width/2, heigth/2, 'reset');
             resetState = true;
-            console.log("games paused")
+            console.log("games paused");
         }
     }
     if (resetState && event.x >= width/2 && event.x <= width/2+350 && event.y >= heigth/2 && event.y<= heigth/2 +100)
     {
         resetState = false;
-        reset.destroy()
+        reset.destroy();
         if (gameOverState)
         {
             gameOver.destroy();
             gameOverState = false;
         }
-        ResetGame()
+        ResetGame();
         game.paused = false;
         pauseState = false;
     }
@@ -322,7 +322,7 @@ function click(event)
 
 function ResetGame()
 {
-    console.log("Resetting game.")
+    console.log("Resetting game.");
     money = 50;
     life = 20;
     kill = 0;
@@ -341,20 +341,20 @@ function ResetGame()
         }
     }
     monsterArray.forEach(function (monster){
-        monster.kill()
+        monster.kill();
     });
-    monsterArray = []
+    monsterArray = [];
     bulletArray.forEach(function (bullet){
-        bullet.kill()
+        bullet.kill();
         bullet.body.velocity = 20000;
     });
-    bulletArray = []
+    bulletArray = [];
     gunArray.forEach(function (gun){
-        gun.kill()
+        gun.kill();
     });
     gunArray = [];
     towerBaseArray.forEach(function (towerBase){
-        towerBase.kill()
+        towerBase.kill();
     });
     towerBaseArray = [];
 
@@ -362,7 +362,7 @@ function ResetGame()
 
 function placeTower(event)
 {
-    console.log("placed Tower "+event.x+" "+event.y)
+    console.log("placed Tower "+event.x+" "+event.y);
     if (event.x >= gun01.position.x && event.x <= gun01.position.x && event.y >= gun01.position.y && event.y <= gun01.position.y)
     {
         if (selectedTower === 1)
@@ -423,16 +423,16 @@ function bulletHit(bullet,monster)
     {
         monster.kill();
         monster.alive = false;
-        kill++
+        kill++;
         changeKill();
         money += monster.price;
         changeMoney();
     }
     else{
         scale = monster.health / monster.startHealth;
-        monster.scale.setTo(scale, scale)
+        monster.scale.setTo(scale, scale);
     }
-    bullet.kill;
+    bullet.kill();
 }
 
 var counter = 0;
@@ -447,7 +447,7 @@ function calculateCurrent(pos)
     if (currentFieldY < 0){currentFieldY=0;}
     else if (currentFieldY > 12){currentFieldY=12;}
 
-    return [currentFieldX,currentFieldY]
+    return [currentFieldX,currentFieldY];
 }
 
 function setGoTo(monster)
@@ -507,7 +507,7 @@ function setGoTo(monster)
 
 function calculateDistanceDouble(x,y)
 {
-    return (x[0]-y[0])*(x[0]-y[0])+(x[1]-y[1])*(x[1]-y[1])
+    return (x[0]-y[0])*(x[0]-y[0])+(x[1]-y[1])*(x[1]-y[1]);
 }
 
 function calculateGoToToWorldCor(pos)
@@ -518,7 +518,7 @@ function calculateGoToToWorldCor(pos)
     {fieldX = 100;}
     if (fieldY<100)
     {fieldY = 100;}
-    return [fieldX,fieldY]
+    return [fieldX,fieldY];
 }
 
 function update()
@@ -547,7 +547,7 @@ function update()
             {
                 //left right
                 monster = monsters.create(50, 350 , 'monster01');
-                monster.dir = "lr"
+                monster.dir = "lr";
 
             }
             //monster = monsters.create(50, 350 , 'monster01');
@@ -562,7 +562,7 @@ function update()
             monster.startHealth = 100;
             monster.health = monster.startHealth;
             //monster.goTo = []
-            monster.goTo = calculateCurrent([monster.body.position.x,monster.body.position.y])
+            monster.goTo = calculateCurrent([monster.body.position.x,monster.body.position.y]);
             monster.alive = true;
             monster.price = 5;
             //monster.goTo[1] = pos[1]
@@ -577,11 +577,11 @@ function update()
         gun = gunArray[g];
         gun.counter++;
         closest = gun.range + 1;
-        monster = null
+        monster = null;
         for (m = 0; m < monsterArray.length; m++)
         {
 
-            delta = game.physics.arcade.distanceBetween(gun,monsterArray[m])
+            delta = game.physics.arcade.distanceBetween(gun,monsterArray[m]);
             if ( delta < gun.range)
             {
                 if (delta < closest)
@@ -617,7 +617,7 @@ function update()
 
     }
 
-    toBeRemoved = []
+    toBeRemoved = [];
     for (i=0;i<monsterArray.length;i++)
     {
         // check up on monsters
@@ -729,7 +729,7 @@ function update()
             monster.kill();
             monster.alive = false;
             life--;
-            changeLife()
+            changeLife();
             if (life<=0)
             {
                 //Game Over!
@@ -744,7 +744,7 @@ function update()
     }
 
     monsterArray = monsterArray.filter(function (monster){
-        return (monster.alive)
+        return (monster.alive);
     });
 
     bulletArray = bulletArray.filter(function (bullet){
@@ -753,7 +753,7 @@ function update()
                 return true;
             }
         else{
-            return false
+            return false;
         }
     });
 
