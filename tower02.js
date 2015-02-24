@@ -1,5 +1,5 @@
-var width = 1024
-var heigth = 700
+var width = 1024;
+var heigth = 700;
 var game = new Phaser.Game(width, heigth, Phaser.AUTO, '', { preload: preload, create: create, update: update });
 
 //var PF = require('pathfinding');
@@ -97,7 +97,7 @@ function create()
     pathfinder.setGrid(swapGrid(fieldArray), 0);
 
 
-    numbers = game.add.group()
+    numbers = game.add.group();
     lifeDigit100 = numbers.create(145, 5, 'numbers');
     lifeDigit100.frame = 0;
     lifeDigit10 = numbers.create(180, 5, 'numbers');
@@ -190,12 +190,12 @@ function printGrid(grid)
 
     for (y=0;y<grid[0].length;y++)
     {
-        s = ""
+        s = "";
         for (x=0;x<grid.length;x++)
         {
-            s += grid[x][y].toString()
+            s += grid[x][y].toString();
         }
-        console.log(s+":"+y)
+        console.log(s+":"+y);
     }
 }
 
@@ -215,15 +215,15 @@ function swapGrid(grid)
 
     */
     //printGrid(grid)
-    newgrid = []
+    newgrid = [];
     for (y=0;y<grid[0].length;y++) //4
     {
-        tempgrid = []
+        tempgrid = [];
         for (x=0;x<grid.length;x++) //3
         {
-            tempgrid.push(grid[x][y])
+            tempgrid.push(grid[x][y]);
         }
-        newgrid.push(tempgrid)
+        newgrid.push(tempgrid);
     }
     //console.log("new:")
     //printGrid(newgrid)
