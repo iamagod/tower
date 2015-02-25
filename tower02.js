@@ -76,6 +76,15 @@ var resetState = false;
 var gameOverState = false;
 var pauseState = false;
 
+var checkTowerPos = {
+    pos : [0,0],
+    UDOK : false,
+    LROK : false,
+    towerType : 1,
+    checkUD : false,
+    checkLR : false,
+};
+
 function create()
 {
     game.physics.startSystem(Phaser.Physics.ARCADE);
@@ -95,6 +104,10 @@ function create()
     //printGrid(fieldArray)
     pathfinder = game.plugins.add(Phaser.Plugin.PathFinderPlugin);
     pathfinder.setGrid(swapGrid(fieldArray), 0);
+
+    pathfinderUD = game.plugins.add(Phaser.Plugin.PathFinderPlugin);
+    pathfinderLR = game.plugins.add(Phaser.Plugin.PathFinderPlugin);
+
 
 
     numbers = game.add.group();
@@ -134,7 +147,7 @@ function create()
     gun01 = items.create(800,100, 'guns');
     gun01.frame = 0;
     gun01.inputEnabled = true;
-    gun01.events.onInputDown.add(placeTower);
+    gun01.events.onInputDown.add(selectTower);
     towerPrice[1] = 5;
 
     towerBase = items.create(850,100, 'guns');
@@ -142,7 +155,7 @@ function create()
     gun02 = items.create(850,100, 'guns');
     gun02.frame = 1;
     gun02.inputEnabled = true;
-    gun02.events.onInputDown.add(placeTower);
+    gun02.events.onInputDown.add(selectTower);
     towerPrice[2] = 10;
 
     guns = game.add.group();
@@ -167,7 +180,6 @@ function changeLife()
 
 function changeKill()
 {
-    var kill = kill;
     if (kill > 1000) {kill = 999;}
     else if (kill < 0) {kill =0;}
     killDigit100.frame = Math.floor(kill/100);
@@ -231,11 +243,40 @@ function swapGrid(grid)
     return newgrid;
 }
 
+function placeTower()
+{
+    money -= towerPrice[checkTowerPos.towerType];
+    changeMoney();
+    if (selectedInField){selectedInField.kill();}
+
+    realPos = calculateGoToToWorldCor(checkTowerPos.pos);
+
+    towerBase = guns.create(realPos[0],realPos[1], 'guns');
+    towerBase.frame = 2;
+    towerBaseArray.push(towerBase);
+    var gun = guns.create(realPos[0] + 25, realPos[1] + 25, 'guns');
+    gun.frame = checkTowerPos.towerType - 1;
+    gun.anchor.setTo(0.5, 0.5);
+    gun.type = checkTowerPos.towerType;
+    gun.range = 200;
+    gun.speed = checkTowerPos.towerType * 50;
+    gun.counter = 0;
+
+    gunArray.push(gun);
+
+    game.world.bringToTop(gun);
+
+    fieldArray[field[0]][field[1]] = checkTowerPos.towerType;
+}
+
+
+
 function click(event)
 {
-    fieldX = Math.floor(event.x/50) -1;
-    fieldY = Math.floor(event.y/50) -1;
-    console.log("click "+selectedTower+" "+fieldX+" "+fieldY );
+    //fieldX = Math.floor(event.x/50) -1;
+    //fieldY = Math.floor(event.y/50) -1;
+    field = calculateCurrent([event.x,event.y]);
+    //console.log("click "+selectedTower+" "+fieldX+" "+fieldY );
 
     // Check if we click in field
     if (selectedTower === 1 || selectedTower === 2 && pauseState === false)
@@ -245,27 +286,42 @@ function click(event)
             placeX = event.x - event.x % 50;
             placeY = event.y - event.y % 50;
 
-            if (fieldArray[fieldX][fieldY] === 0 && money >= towerPrice[selectedTower])
+            if (fieldArray[field[0]][field[1]] === 0 && money >= towerPrice[selectedTower])
             {
-                money -= towerPrice[selectedTower];
-                changeMoney();
-                if (selectedInField){selectedInField.kill();}
-                towerBase = guns.create(placeX,placeY, 'guns');
-                towerBase.frame = 2;
-                towerBaseArray.push(towerBase);
-                var gun = guns.create(placeX+25, placeY+25, 'guns');
-                gun.frame = selectedTower - 1;
-                gun.anchor.setTo(0.5, 0.5);
-                gun.type = selectedTower;
-                gun.range = 200;
-                gun.speed = selectedTower * 50;
-                gun.counter = 0;
+                checkTowerPos.UDOK = false;
+                checkTowerPos.LROK = false;
 
-                gunArray.push(gun);
+                checkTowerPos.checkUD = false;
+                checkTowerPos.checkLR = false;
 
-                game.world.bringToTop(gun);
+                temp = [];
+                for (x=0;x<fieldArray.length;x++)
+                {
+                    temp.push(fieldArray[x].slice(0));
+                }
+                temp[field[0]][field[1]] = 1;
 
-                fieldArray[fieldX][fieldY] = selectedTower;
+                checkTowerPos.pos = [field[0],field[1]];
+                pathfinderUD.setGrid(swapGrid(temp), 0);
+                pathfinderLR.setGrid(swapGrid(temp), 0);
+                pathfinderUD.setCallbackFunction(function(path){
+                    checkTowerPos.checkUD = true;
+                    if (path !== null && path.length !== 0){
+                        checkTowerPos.UDOK = true;}
+                    else{
+                        checkTowerPos.UDOK = false;}});
+                pathfinderLR.setCallbackFunction(function(path){
+                    checkTowerPos.checkLR = true;
+                    if (path !== null && path.length !== 0){
+                        checkTowerPos.LROK = true;}
+                    else{
+                        checkTowerPos.UDOK = false;}});
+                pathfinderUD.preparePathCalculation([7, 0], [7,12]);
+                pathfinderLR.preparePathCalculation([0, 7], [14,7]);
+                pathfinderUD.calculatePath();
+                pathfinderLR.calculatePath();
+
+                checkTowerPos.towerType = selectedTower;
 
             }
             else
@@ -360,7 +416,7 @@ function ResetGame()
 
 }
 
-function placeTower(event)
+function selectTower(event)
 {
     console.log("placed Tower "+event.x+" "+event.y);
     if (event.x >= gun01.position.x && event.x <= gun01.position.x && event.y >= gun01.position.y && event.y <= gun01.position.y)
@@ -369,7 +425,6 @@ function placeTower(event)
         {
             selectedTower = 0;
             selected.kill();
-
         }
         else
         {
@@ -395,7 +450,6 @@ function placeTower(event)
             if (selected){selected.kill();}
             selected = items.create(850,100, 'guns');
             selected.frame = 3;
-
         }
 
     }
@@ -527,6 +581,17 @@ function update()
     //console.log(counter)
     counter++;
     game.physics.arcade.overlap(bullets, monsters, bulletHit, null, this);
+
+    if (checkTowerPos.checkUD && checkTowerPos.checkLR && checkTowerPos.UDOK && checkTowerPos.LROK)
+    {
+        placeTower();
+        checkTowerPos.checkUD = false;
+        checkTowerPos.checkLR = false;
+        checkTowerPos.checkUD = false;
+        checkTowerPos.checkUD = false;
+
+    }
+
 
     if (running )
     {
@@ -746,7 +811,7 @@ function update()
     monsterArray = monsterArray.filter(function (monster){
         return (monster.alive);
     });
-
+    //console.log("bullet.array length b"+ bulletArray.length);
     bulletArray = bulletArray.filter(function (bullet){
         if (bullet.body.position.x > 750 || bullet.body.position.x < 100 || bullet.body.position.y > 650||bullet.body.position.y < 100){
                 bullet.kill();
@@ -756,5 +821,6 @@ function update()
             return false;
         }
     });
+    //console.log("bullet.array length a"+ bulletArray.length);
 
 }
