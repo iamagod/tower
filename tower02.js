@@ -74,6 +74,7 @@ var bg;
 
 var resetState = false;
 var gameOverState = false;
+var gameOver;
 var pauseState = false;
 
 var checkTowerPos = {
@@ -111,49 +112,35 @@ function create()
 
 
     numbers = game.add.group();
-    lifeDigit100 = numbers.create(145, 5, 'numbers');
-    lifeDigit100.frame = 0;
-    lifeDigit10 = numbers.create(180, 5, 'numbers');
-    lifeDigit10.frame = 0;
-    lifeDigit1 = numbers.create(215, 5, 'numbers');
-    lifeDigit1.frame = 0;
+    lifeDigit100 = numbers.create(145, 5, 'numbers',0);
+    lifeDigit10 = numbers.create(180, 5, 'numbers',0);
+    lifeDigit1 = numbers.create(215, 5, 'numbers',0);
 
     changeLife(life);
 
-    killDigit100 = numbers.create(360, 5, 'numbers');
-    killDigit100.frame = 0;
-    killDigit10 = numbers.create(395, 5, 'numbers');
-    killDigit10.frame = 0;
-    killDigit1 = numbers.create(430, 5, 'numbers');
-    killDigit1.frame = 0;
+    killDigit100 = numbers.create(360, 5, 'numbers',0);
+    killDigit10 = numbers.create(395, 5, 'numbers',0);
+    killDigit1 = numbers.create(430, 5, 'numbers',0);
 
     changeKill(kill);
 
-    moneyDigit1000 = numbers.create(560, 5, 'numbers');
-    moneyDigit1000.frame = 0;
-    moneyDigit100 = numbers.create(595, 5, 'numbers');
-    moneyDigit100.frame = 0;
-    moneyDigit10 = numbers.create(630, 5, 'numbers');
-    moneyDigit10.frame = 0;
-    moneyDigit1 = numbers.create(665, 5, 'numbers');
-    moneyDigit1.frame = 0;
+    moneyDigit1000 = numbers.create(560, 5, 'numbers',0);
+    moneyDigit100 = numbers.create(595, 5, 'numbers',0);
+    moneyDigit10 = numbers.create(630, 5, 'numbers',0);
+    moneyDigit1 = numbers.create(665, 5, 'numbers',0);
 
     changeMoney(money);
 
     items = game.add.group();
 
-    towerBase = items.create(800,100, 'guns');
-    towerBase.frame = 2;
-    gun01 = items.create(800,100, 'guns');
-    gun01.frame = 0;
+    towerBase = items.create(800,100, 'guns',2);
+    gun01 = items.create(800,100, 'guns',0);
     gun01.inputEnabled = true;
     gun01.events.onInputDown.add(selectTower);
     towerPrice[1] = 5;
 
-    towerBase = items.create(850,100, 'guns');
-    towerBase.frame = 2;
-    gun02 = items.create(850,100, 'guns');
-    gun02.frame = 1;
+    towerBase = items.create(850,100, 'guns',2);
+    gun02 = items.create(850,100, 'guns',1);
     gun02.inputEnabled = true;
     gun02.events.onInputDown.add(selectTower);
     towerPrice[2] = 10;
@@ -251,11 +238,11 @@ function placeTower()
 
     realPos = calculateGoToToWorldCor(checkTowerPos.pos);
 
-    towerBase = guns.create(realPos[0],realPos[1], 'guns');
-    towerBase.frame = 2;
+    towerBase = guns.create(realPos[0],realPos[1], 'guns', 2);
+    //towerBase.frame = 2;
     towerBaseArray.push(towerBase);
-    var gun = guns.create(realPos[0] + 25, realPos[1] + 25, 'guns');
-    gun.frame = checkTowerPos.towerType - 1;
+    var gun = guns.create(realPos[0] + 25, realPos[1] + 25, 'guns',checkTowerPos.towerType - 1);
+    //gun.frame =
     gun.anchor.setTo(0.5, 0.5);
     gun.type = checkTowerPos.towerType;
     gun.range = 200;
@@ -279,7 +266,7 @@ function click(event)
     //console.log("click "+selectedTower+" "+fieldX+" "+fieldY );
 
     // Check if we click in field
-    if (selectedTower === 1 || selectedTower === 2 && pauseState === false)
+    if ((selectedTower === 1 || selectedTower === 2) && pauseState === false && resetState === false)
     {
         if (event.x >100 && event.x<750 && event.y>100 && event.y<650 )
         {
@@ -363,114 +350,52 @@ function click(event)
     }
     if (resetState && event.x >= width/2 && event.x <= width/2+350 && event.y >= heigth/2 && event.y<= heigth/2 +100)
     {
-        resetState = false;
+        ResetGame();
         reset.destroy();
-        if (gameOverState)
-        {
+        if (gameOverState){
+            //gameOver.remove();
             gameOver.destroy();
             gameOverState = false;
         }
-        ResetGame();
-        game.paused = false;
+        if (game.paused === true){game.paused = false;}
         pauseState = false;
+        resetState = false;
     }
 }
 
-function ResetGame()
-{
-    console.log("Resetting game.");
-    money = 50;
-    life = 20;
-    kill = 0;
-    counter = 0;
-    running = false;
-    changeKill();
-    changeLife();
-    changeMoney();
-    for (x=0;x<15;x++)
-    {
-        for (y=0;y<13;y++)
-        {
-            //console.log(x+" "+y+":"+matrix[y * 15 + x])
-            //console.log(fieldArray[x])
-            fieldArray[x][y] = matrix[y * 15 + x];
-        }
-    }
-    monsterArray.forEach(function (monster){
-        monster.kill();
-    });
-    monsterArray = [];
-    bulletArray.forEach(function (bullet){
-        bullet.kill();
-        bullet.body.velocity = 20000;
-    });
-    bulletArray = [];
-    gunArray.forEach(function (gun){
-        gun.kill();
-    });
-    gunArray = [];
-    towerBaseArray.forEach(function (towerBase){
-        towerBase.kill();
-    });
-    towerBaseArray = [];
 
-}
 
 function selectTower(event)
 {
     console.log("placed Tower "+event.x+" "+event.y);
-    if (event.x >= gun01.position.x && event.x <= gun01.position.x && event.y >= gun01.position.y && event.y <= gun01.position.y)
-    {
-        if (selectedTower === 1)
-        {
+    if (event.x >= gun01.position.x && event.x <= gun01.position.x && event.y >= gun01.position.y && event.y <= gun01.position.y){
+        if (selectedTower === 1){
             selectedTower = 0;
             selected.kill();
         }
-        else
-        {
-            //console.log("selected")
+        else{
             selectedTower = 1;
             if (selected){selected.kill();}
             selected = items.create(800,100, 'guns');
             selected.frame = 3;
-            //game.world.bringToTop(selected);
         }
-
     }
-    else if (event.x >= gun02.position.x && event.x <= gun02.position.x && event.y >= gun02.position.y && event.y <= gun02.position.y)
-    {
-        if (selectedTower === 2)
-        {
+    else if (event.x >= gun02.position.x && event.x <= gun02.position.x && event.y >= gun02.position.y && event.y <= gun02.position.y){
+        if (selectedTower === 2){
             selectedTower = 0;
             selected.kill();
         }
-        else
-        {
+        else{
             selectedTower = 2;
             if (selected){selected.kill();}
             selected = items.create(850,100, 'guns');
             selected.frame = 3;
         }
-
     }
 }
 
-function findPathTo(tilex, tiley) {
-
-    pathfinder.setCallbackFunction(function(path) {
-        //console.log(path)
-    });
-
-    pathfinder.preparePathCalculation([0, 6], [tilex,tiley]);
-    pathfinder.calculatePath();
-}
-
-
-
 function bulletHit(bullet,monster)
 {
-
-    bullet.exists = false;
     //console.log(monster.health+" "+bullet.damage)
     monster.health -= bullet.damage;
     if (monster.health <= 0)
@@ -486,11 +411,12 @@ function bulletHit(bullet,monster)
         scale = monster.health / monster.startHealth;
         monster.scale.setTo(scale, scale);
     }
+    bullet.exists = false;
     bullet.kill();
+    //bullets.remove(bullet);
 }
 
 var counter = 0;
-//var globalMonster;
 
 function calculateCurrent(pos)
 {
@@ -510,8 +436,6 @@ function setGoTo(monster)
     Calculates the goto position.
     */
     pathfinder.setGrid(swapGrid(fieldArray), 0);
-    //globalMonster = monster;
-    //globalMonster.pathFound = false;
 
     pathfinder.setCallbackFunction(function(path)
     {
@@ -527,21 +451,6 @@ function setGoTo(monster)
         {
             monster.goTo[0] = path[1].x;
             monster.goTo[1] = path[1].y;
-            /*
-            //monster.pathFound = true;
-            if (path.length > 7){l = 7;}
-            else{l=path.length;}
-            for (k=0;k<l;k++)
-            {
-                //console.log("path found go to "+k+": [" + path[k].x+","+path[k].y+"]")
-                temp[path[k].x][path[k].y] = k+2;
-
-            }
-            //console.log("path found go to: [" + path[1].x+","+path[1].y+"]")
-
-            printGrid(temp)
-            */
-
         }
 
     });
@@ -557,11 +466,6 @@ function setGoTo(monster)
     }
     pathfinder.calculatePath();
 
-}
-
-function calculateDistanceDouble(x,y)
-{
-    return (x[0]-y[0])*(x[0]-y[0])+(x[1]-y[1])*(x[1]-y[1]);
 }
 
 function calculateGoToToWorldCor(pos)
@@ -617,14 +521,14 @@ function update()
             }
             //monster = monsters.create(50, 350 , 'monster01');
             monsterArray.push(monster);
-            monster.speed = 50;
+            monster.speed = 100;
             monster.body.velocity.x = 0;
             monster.body.velocity.y = 0;
             monster.anchor.setTo(0.5, 0.5);
             //monster.anchor.setTo(1, 1);
-            monster.animations.add('move', [0,1,2,3], 10, true);
+            monster.animations.add('move', [0,1,2,3], 5, true);
             monster.animations.play('move');
-            monster.startHealth = 100;
+            monster.startHealth = 200;
             monster.health = monster.startHealth;
             //monster.goTo = []
             monster.goTo = calculateCurrent([monster.body.position.x,monster.body.position.y]);
@@ -662,14 +566,14 @@ function update()
             if (gun.counter >= gun.speed )
             {
                 gun.counter = 0;
-                var bullet = bullets.create(gun.position.x - 5, gun.position.y - 5, 'bullets');
-                bullet.frame = gun.type - 1;
+                var bullet = bullets.create(gun.position.x - 5, gun.position.y - 5, 'bullets', gun.type - 1);
+                //bullet.frame = gun.type - 1;
                 // gun.type 12 ==> turret 2 upgrade 1 so 2*5*2= 20
                 // gun.type 01 ==> turret 2 upgrade 1 so 1*5*1= 5
                 // gun.type 51 ==> turret 2 upgrade 1 so 1*5*5= 25
                 bullet.damage = (gun.type%10)*5*(1+Math.floor(gun.type/10));
                 gun.anchor.setTo(0.5, 0.5);
-                bulletArray.push(bullet);
+                //bulletArray.push(bullet);
                 //bullet.body.rotation = game.physics.arcade.angleBetween(monster,gun);
                 bullet.body.velocity = game.physics.arcade.velocityFromRotation(game.physics.arcade.angleBetween(monster,gun)+Math.PI, 400 - gun.type*100);
             }
@@ -795,11 +699,11 @@ function update()
             monster.alive = false;
             life--;
             changeLife();
-            if (life<=0)
+            if (life <= 0)
             {
                 //Game Over!
-                gameOver = game.add.sprite(width/4, heigth/4, 'gameover');
-                game.pause = true;
+                gameOver = game.add.sprite(Math.round(width/4), Math.round(heigth/4), 'gameover');
+                if (game.paused === false) {game.paused = true;}
                 reset = game.add.sprite(width/2, heigth/2, 'reset');
                 resetState = true;
                 gameOverState = true;
@@ -811,16 +715,34 @@ function update()
     monsterArray = monsterArray.filter(function (monster){
         return (monster.alive);
     });
-    //console.log("bullet.array length b"+ bulletArray.length);
-    bulletArray = bulletArray.filter(function (bullet){
+    bullets.forEachExists(function (bullet){
         if (bullet.body.position.x > 750 || bullet.body.position.x < 100 || bullet.body.position.y > 650||bullet.body.position.y < 100){
-                bullet.kill();
-                return true;
-            }
-        else{
-            return false;
+            bullet.exists = false;
+            bullet.kill();
         }
     });
-    //console.log("bullet.array length a"+ bulletArray.length);
 
+}
+
+function ResetGame()
+{
+    console.log("Resetting game.");
+    money = 50;
+    life = 20;
+    kill = 0;
+    counter = 0;
+    running = false;
+    changeKill();
+    changeLife();
+    changeMoney();
+    for (x=0;x<15;x++){
+        for (y=0;y<13;y++){
+            fieldArray[x][y] = matrix[y * 15 + x];
+        }
+    }
+    monsters.removeAll();
+    bullets.removeAll();
+    guns.removeAll();
+    gunArray = [];
+    monsterArray = [];
 }
