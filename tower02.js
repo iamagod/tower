@@ -76,6 +76,7 @@ var resetState = false;
 var gameOverState = false;
 var gameOver;
 var pauseState = false;
+var counter = 0;
 
 var checkTowerPos = {
     pos : [0,0],
@@ -91,6 +92,7 @@ function create()
     game.physics.startSystem(Phaser.Physics.ARCADE);
     bg = game.add.sprite(0, 0, 'field');
 
+    console.log(fieldArray.length + "'"+fieldArray[0].length);
     for (x=0;x<15;x++)
     {
         for (y=0;y<13;y++)
@@ -236,7 +238,7 @@ function placeTower()
     changeMoney();
     if (selectedInField){selectedInField.kill();}
 
-    realPos = calculateGoToToWorldCor(checkTowerPos.pos);
+    realPos = convertMatrix2Real(checkTowerPos.pos);
 
     towerBase = guns.create(realPos[0],realPos[1], 'guns', 2);
     //towerBase.frame = 2;
@@ -253,17 +255,14 @@ function placeTower()
 
     game.world.bringToTop(gun);
 
-    fieldArray[field[0]][field[1]] = checkTowerPos.towerType;
+    fieldArray[checkTowerPos.pos[0]][checkTowerPos.pos[1]] = checkTowerPos.towerType;
+    monsters.forEachExists(function(monster){
+        monster.needsUpdate = true;
+    });
 }
 
-
-
-function click(event)
-{
-    //fieldX = Math.floor(event.x/50) -1;
-    //fieldY = Math.floor(event.y/50) -1;
-    field = calculateCurrent([event.x,event.y]);
-    //console.log("click "+selectedTower+" "+fieldX+" "+fieldY );
+function click(event){
+    field = convertReal2Matrix([event.x,event.y]);
 
     // Check if we click in field
     if ((selectedTower === 1 || selectedTower === 2) && pauseState === false && resetState === false)
@@ -275,11 +274,11 @@ function click(event)
 
             if (fieldArray[field[0]][field[1]] === 0 && money >= towerPrice[selectedTower])
             {
-                checkTowerPos.UDOK = false;
-                checkTowerPos.LROK = false;
+                //checkTowerPos.UDOK = false;
+                //checkTowerPos.LROK = false;
 
-                checkTowerPos.checkUD = false;
-                checkTowerPos.checkLR = false;
+                //checkTowerPos.checkUD = false;
+                //checkTowerPos.checkLR = false;
 
                 temp = [];
                 for (x=0;x<fieldArray.length;x++)
@@ -290,8 +289,21 @@ function click(event)
 
                 checkTowerPos.pos = [field[0],field[1]];
                 pathfinderUD.setGrid(swapGrid(temp), 0);
-                pathfinderLR.setGrid(swapGrid(temp), 0);
-                pathfinderUD.setCallbackFunction(function(path){
+                pathfinderUD.setCallbackFunction(function(path1)
+                {
+                    if (path1 !== null && path1.length !== 0)
+                    {
+                        pathfinderLR.setGrid(swapGrid(temp), 0);
+                        pathfinderLR.setCallbackFunction(function(path2){
+                            if (path2 !== null && path2.length !== 0){
+                                placeTower();
+                            }
+                        });
+                        pathfinderLR.preparePathCalculation([0, 7], [14,7]);
+                        pathfinderLR.calculatePath();
+                    }
+                });
+                    /*
                     checkTowerPos.checkUD = true;
                     if (path !== null && path.length !== 0){
                         checkTowerPos.UDOK = true;}
@@ -303,13 +315,13 @@ function click(event)
                         checkTowerPos.LROK = true;}
                     else{
                         checkTowerPos.UDOK = false;}});
+                */
                 pathfinderUD.preparePathCalculation([7, 0], [7,12]);
-                pathfinderLR.preparePathCalculation([0, 7], [14,7]);
+                //pathfinderLR.preparePathCalculation([0, 7], [14,7]);
                 pathfinderUD.calculatePath();
-                pathfinderLR.calculatePath();
+
 
                 checkTowerPos.towerType = selectedTower;
-
             }
             else
             {
@@ -317,9 +329,7 @@ function click(event)
                 if (selectedInField){selectedInField.kill();}
                 selectedInField  = guns.create(placeX,placeY, 'guns');
                 selectedInField.frame = 3;
-
             }
-
         }
     }
     if (event.x >800 && event.x<1000 && event.y>600 && event.y<650 )
@@ -363,10 +373,7 @@ function click(event)
     }
 }
 
-
-
-function selectTower(event)
-{
+function selectTower(event){
     console.log("placed Tower "+event.x+" "+event.y);
     if (event.x >= gun01.position.x && event.x <= gun01.position.x && event.y >= gun01.position.y && event.y <= gun01.position.y){
         if (selectedTower === 1){
@@ -394,14 +401,14 @@ function selectTower(event)
     }
 }
 
-function bulletHit(bullet,monster)
-{
+function bulletHit(bullet,monster){
     //console.log(monster.health+" "+bullet.damage)
     monster.health -= bullet.damage;
     if (monster.health <= 0)
     {
         monster.kill();
         monster.alive = false;
+        monster.exists = false;
         kill++;
         changeKill();
         money += monster.price;
@@ -416,46 +423,29 @@ function bulletHit(bullet,monster)
     //bullets.remove(bullet);
 }
 
-var counter = 0;
-
-function calculateCurrent(pos)
-{
-    currentFieldX = Math.floor((Math.round(pos[0]))/50) -1;
-    currentFieldY = Math.floor((Math.round(pos[1]))/50) -1;
-    if (currentFieldX < 0){currentFieldX=0;}
-    else if (currentFieldX > 14){currentFieldX=14;}
-    if (currentFieldY < 0){currentFieldY=0;}
-    else if (currentFieldY > 12){currentFieldY=12;}
-
-    return [currentFieldX,currentFieldY];
-}
-
-function setGoTo(monster)
-{
+function calculateNewPath(monster){
     /*
     Calculates the goto position.
     */
+    monster.newPathFound = false;
     pathfinder.setGrid(swapGrid(fieldArray), 0);
 
     pathfinder.setCallbackFunction(function(path)
     {
-        /*
-        temp = []
-        for (x=0;x<fieldArray.length;x++)
-        {
-            temp.push(fieldArray[x].slice(0))
-        }
-        */
-        //console.log(path)
         if (path !== null && path.length !== 0)
         {
+            monster.path = [];
+            path.forEach(function(pos){
+                monster.path.push([pos.x,pos.y]);
+            });
+            monster.needsUpdate = false;
+            monster.newPathFound = true;
             monster.goTo[0] = path[1].x;
             monster.goTo[1] = path[1].y;
         }
-
     });
 
-    currentField = calculateCurrent([monster.body.position.x,monster.body.position.y]);
+    currentField = convertReal2Matrix([monster.body.position.x,monster.body.position.y]);
     if (monster.dir === "lr")
     {
         pathfinder.preparePathCalculation([currentField[0], currentField[1]], [14,7]);
@@ -465,11 +455,9 @@ function setGoTo(monster)
         pathfinder.preparePathCalculation([currentField[0], currentField[1]], [7,12]);
     }
     pathfinder.calculatePath();
-
 }
 
-function calculateGoToToWorldCor(pos)
-{
+function convertMatrix2Real(pos){
     fieldX = Math.round(pos[0] * 50 + 50);
     fieldY = Math.round(pos[1] * 50 + 50);
     if (fieldX < 100)
@@ -479,23 +467,28 @@ function calculateGoToToWorldCor(pos)
     return [fieldX,fieldY];
 }
 
-function update()
-{
+function convertReal2Matrix(pos){
+    currentFieldX = Math.floor((Math.round(pos[0]))/50) -1;
+    currentFieldY = Math.floor((Math.round(pos[1]))/50) -1;
+    if (currentFieldX < 0){
+        currentFieldX=0;
+        }
+    else if (currentFieldX > fieldArray.length - 1){
+        currentFieldX = fieldArray.length - 1;
+        }
+    if (currentFieldY < 0){
+        currentFieldY=0;
+        }
+    else if (currentFieldY > fieldArray[0].length - 1){
+        currentFieldY = fieldArray[0].length - 1;
+        }
 
-    //console.log(counter)
+    return [currentFieldX,currentFieldY];
+}
+
+function update(){
     counter++;
     game.physics.arcade.overlap(bullets, monsters, bulletHit, null, this);
-
-    if (checkTowerPos.checkUD && checkTowerPos.checkLR && checkTowerPos.UDOK && checkTowerPos.LROK)
-    {
-        placeTower();
-        checkTowerPos.checkUD = false;
-        checkTowerPos.checkLR = false;
-        checkTowerPos.checkUD = false;
-        checkTowerPos.checkUD = false;
-
-    }
-
 
     if (running )
     {
@@ -510,14 +503,12 @@ function update()
                 // up down
                 monster = monsters.create(450, 50 , 'monster01');
                 monster.dir = "ud";
-
             }
             else
             {
                 //left right
                 monster = monsters.create(50, 350 , 'monster01');
                 monster.dir = "lr";
-
             }
             //monster = monsters.create(50, 350 , 'monster01');
             monsterArray.push(monster);
@@ -525,17 +516,17 @@ function update()
             monster.body.velocity.x = 0;
             monster.body.velocity.y = 0;
             monster.anchor.setTo(0.5, 0.5);
-            //monster.anchor.setTo(1, 1);
             monster.animations.add('move', [0,1,2,3], 5, true);
             monster.animations.play('move');
             monster.startHealth = 200;
             monster.health = monster.startHealth;
-            //monster.goTo = []
-            monster.goTo = calculateCurrent([monster.body.position.x,monster.body.position.y]);
+            monster.goTo = convertReal2Matrix([monster.body.position.x,monster.body.position.y]);
             monster.alive = true;
             monster.price = 5;
-            //monster.goTo[1] = pos[1]
-
+            monster.needsUpdate = true;
+            monster.path = [monster.goTo];
+            monster.newPathFound = false;
+            monster.pathPos = 1;
         }
     }
 
@@ -592,18 +583,38 @@ function update()
         // check up on monsters
         monster = monsterArray[i];
 
-        field = calculateGoToToWorldCor(monster.goTo);
+        goToRealX = convertMatrix2Real(monster.goTo)[0];
+        goToRealY = convertMatrix2Real(monster.goTo)[1];
 
         monX = Math.round(monster.body.position.x);
         monY = Math.round(monster.body.position.y);
-        if (Math.abs(field[0] - monX) <= 10 && Math.abs(field[1] - monY) <= 10 || monX <=95 || monY <= 95)
+        if (Math.abs(goToRealX - monX) <= 10 && Math.abs(goToRealY - monY) <= 10 || monX <=95 || monY <= 95)
         {
-            setGoTo(monster);
+            // monster has reached it's goto position.
+            //calculateNewPath(monster);
+            ///*
+            if (monster.needsUpdate)
+            {
+                //console.log("new cal");
+                calculateNewPath(monster);
+                monster.pathPos = 1;
+                monster.needsUpdate = false;
+            }
+            if (monster.newPathFound && !monster.needsUpdate &&  monX > 95 && monY > 95){
+                monster.pathPos++;
+                if (monster.pathPos >= monster.path.length){
+                    monster.pathPos = monster.path.length - 1;
+                }
+                //monster.newPathFound = false;
+                //console.log(monster.pathPos+":"+monster.path[monster.pathPos]+" goto: "+monster.goTo[0]+","+monster.goTo[1]+" field: "+ goToRealX+","+goToRealY);
+                monster.goTo[0] = monster.path[monster.pathPos][0];
+                monster.goTo[1] = monster.path[monster.pathPos][1];
+            }//*/
         }
 
-        currentField = calculateCurrent([monster.body.position.x,monster.body.position.y]);
+        //currentField = convertReal2Matrix([monster.body.position.x,monster.body.position.y]);
 
-        //console.log("current: "+monX+","+monY+" - "+currentField[0]+","+currentField[1]+" goto: "+field[0]+","+field[1]+" - "+monster.goTo[0]+","+monster.goTo[1])
+        //console.log("current: "+monX+","+monY+" - "+currentgoToRealX+","+currentgoToRealY+" goto: "+goToRealX+","+goToRealY+" - "+monster.goTo[0]+","+monster.goTo[1])
         if (monX <= 95)
         {
             // always first push them into the field.
@@ -618,16 +629,16 @@ function update()
             monster.body.velocity.y = monster.speed;
 
         }
-        else if (Math.abs(field[0] - monX) >= Math.abs(field[1] - monY) || Math.abs(field[0] - monX)<=2)
+        else if (Math.abs(goToRealX - monX) >= Math.abs(goToRealY - monY) || Math.abs(goToRealX - monX)<=2)
         {
             // move in Y
 
-            if (field[1] > monY)
+            if (goToRealY > monY)
             {
                 monster.body.velocity.y = monster.speed;
                 monster.body.velocity.x = 0;
             }
-            else if (field[1] < monY)
+            else if (goToRealY < monY)
             {
                 monster.body.velocity.y = -monster.speed;
                 monster.body.velocity.x = 0;
@@ -635,33 +646,35 @@ function update()
             else
             {
                 //fieldY === monY
-                if (field[0] > monX)
+                console.log("fieldY === monY");
+                if (goToRealX > monX)
                 {
                     monster.body.velocity.x = monster.speed;
                     monster.body.velocity.y = 0;
                 }
-                else if (field[0] < monX)
+                else if (goToRealX < monX)
                 {
                     monster.body.velocity.x = -monster.speed;
                     monster.body.velocity.y = 0;
                 }
                 else
                 {
+                    console.log("velo 0!");
                     monster.body.velocity.x = 0;
                     monster.body.velocity.y = 0;
                 }
             }
         }
-        else if (Math.abs(field[0] - monX) < Math.abs(field[1] - monY) || Math.abs(field[1] - monY) <= 2)
+        else if (Math.abs(goToRealX - monX) < Math.abs(goToRealY - monY) || Math.abs(goToRealY - monY) <= 2)
         {
             // move in X
-
-            if (field[0] > monX)
+            console.log("move in X");
+            if (goToRealX > monX)
             {
                 monster.body.velocity.x = monster.speed;
                 monster.body.velocity.y = 0;
             }
-            else if (field[0] < monX)
+            else if (goToRealX < monX)
             {
                 monster.body.velocity.x = -monster.speed;
                 monster.body.velocity.y = 0;
@@ -669,18 +682,20 @@ function update()
             else
             {
                 // fieldX === monX
-                if (field[1] > monY)
+                console.log("fieldX === monX");
+                if (goToRealY > monY)
                 {
                     monster.body.velocity.y = monster.speed;
                     monster.body.velocity.x = 0;
                 }
-                else if (field[1] < monY)
+                else if (goToRealY < monY)
                 {
                     monster.body.velocity.y = -monster.speed;
                     monster.body.velocity.x = 0;
                 }
                 else
                 {
+                    console.log("velo 0!");
                     monster.body.velocity.x = 0;
                     monster.body.velocity.y = 0;
                 }
@@ -719,6 +734,7 @@ function update()
         if (bullet.body.position.x > 750 || bullet.body.position.x < 100 || bullet.body.position.y > 650||bullet.body.position.y < 100){
             bullet.exists = false;
             bullet.kill();
+            //bullet.remove();
         }
     });
 
