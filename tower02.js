@@ -1,22 +1,14 @@
+/*
+Tower Defence.
+
+11x13 game field
+game field is 100,100 x 750x650
+*/
+
 var width = 1024;
 var heigth = 700;
 var game = new Phaser.Game(width, heigth, Phaser.AUTO, '', { preload: preload, create: create, update: update });
 
-//var PF = require('pathfinding');
-
-// 11x13 game field
-// game field is 100,100 x 750x650
-function preload()
-{
-    game.load.image      ('field'    , 'assets/field.png'            );
-    game.load.spritesheet('guns'     , 'assets/guns.png'    ,50,50,5 );
-    game.load.spritesheet('bullets'  , 'assets/bullets.png' ,10,10,5 );
-    game.load.spritesheet('monster01', 'assets/baddie01.png',50,50,4 );
-    game.load.spritesheet('numbers'  , 'assets/numbers.png' ,40,50,10);
-    game.load.image      ('reset'    , 'assets/reset.png'            );
-    game.load.image      ('gameover' , 'assets/game over.png'         );
-
-}
 var towerBase;
 var gun01;
 var gun02;
@@ -71,6 +63,7 @@ var life = 20;
 var kill = 0;
 var towerPrice =[];
 var bg;
+var blocked;
 
 var resetState = false;
 var gameOverState = false;
@@ -87,21 +80,29 @@ var checkTowerPos = {
     checkLR : false,
 };
 
-function create()
-{
+function preload(){
+    game.load.image      ('field'    , 'assets/field.png'            );
+    game.load.spritesheet('guns'     , 'assets/guns.png'    ,50,50,5 );
+    game.load.spritesheet('bullets'  , 'assets/bullets.png' ,10,10,5 );
+    game.load.spritesheet('monster01', 'assets/baddie01.png',50,50,4 );
+    game.load.spritesheet('numbers'  , 'assets/numbers.png' ,40,50,10);
+    game.load.image      ('reset'    , 'assets/reset.png'            );
+    game.load.image      ('gameover' , 'assets/game over.png'        );
+    game.load.image      ('blocked'  , 'assets/blocked.png'          );
+}
+
+function create(){
     game.physics.startSystem(Phaser.Physics.ARCADE);
     bg = game.add.sprite(0, 0, 'field');
+    blocked = game.add.sprite(Math.round(width/3),Math.round(heigth/2),"blocked");
+    blocked.scale.setTo(0.5,0.5);
+    blocked.alpha = 0;
 
     console.log(fieldArray.length + "'"+fieldArray[0].length);
-    for (x=0;x<15;x++)
-    {
-        for (y=0;y<13;y++)
-        {
-            //console.log(x+" "+y+":"+matrix[y * 15 + x])
-            //console.log(fieldArray[x])
+    for (x=0;x<15;x++){
+        for (y=0;y<13;y++){
             fieldArray[x][y] = matrix[y * 15 + x];
         }
-
     }
 
     //printGrid(fieldArray)
@@ -157,9 +158,7 @@ function create()
 
 }
 
-function changeLife()
-{
-
+function changeLife(){
     if (life > 1000) {life = 999;}
     else if (life < 0) {life =0;}
     lifeDigit100.frame = Math.floor(life/100);
@@ -167,8 +166,7 @@ function changeLife()
     lifeDigit1.frame = life%10;
 }
 
-function changeKill()
-{
+function changeKill(){
     if (kill > 1000) {kill = 999;}
     else if (kill < 0) {kill =0;}
     killDigit100.frame = Math.floor(kill/100);
@@ -176,8 +174,7 @@ function changeKill()
     killDigit1.frame = kill%10;
 }
 
-function changeMoney()
-{
+function changeMoney(){
     if ( money > 10000) {money = 9990;}
     else if (money < 0) {money =0;}
     moneyDigit1000.frame = Math.floor(money/1000);
@@ -186,22 +183,17 @@ function changeMoney()
     moneyDigit1.frame = money%10;
 }
 
-function printGrid(grid)
-{
-
-    for (y=0;y<grid[0].length;y++)
-    {
+function printGrid(grid){
+    for (y=0;y<grid[0].length;y++){
         s = "";
-        for (x=0;x<grid.length;x++)
-        {
+        for (x=0;x<grid.length;x++){
             s += grid[x][y].toString();
         }
         console.log(s+":"+y);
     }
 }
 
-function swapGrid(grid)
-{
+function swapGrid(grid){
     /*
     [
     [1, 2, 3, 4]
@@ -232,8 +224,7 @@ function swapGrid(grid)
     return newgrid;
 }
 
-function placeTower()
-{
+function placeTower(){
     money -= towerPrice[checkTowerPos.towerType];
     changeMoney();
     if (selectedInField){selectedInField.kill();}
@@ -265,62 +256,41 @@ function click(event){
     field = convertReal2Matrix([event.x,event.y]);
 
     // Check if we click in field
-    if ((selectedTower === 1 || selectedTower === 2) && pauseState === false && resetState === false)
-    {
-        if (event.x >100 && event.x<750 && event.y>100 && event.y<650 )
-        {
+    if ((selectedTower === 1 || selectedTower === 2) && pauseState === false && resetState === false){
+        if (event.x >100 && event.x<750 && event.y>100 && event.y<650 ){
             placeX = event.x - event.x % 50;
             placeY = event.y - event.y % 50;
 
-            if (fieldArray[field[0]][field[1]] === 0 && money >= towerPrice[selectedTower])
-            {
-                //checkTowerPos.UDOK = false;
-                //checkTowerPos.LROK = false;
-
-                //checkTowerPos.checkUD = false;
-                //checkTowerPos.checkLR = false;
+            if (fieldArray[field[0]][field[1]] === 0 && money >= towerPrice[selectedTower]){
 
                 temp = [];
-                for (x=0;x<fieldArray.length;x++)
-                {
+                for (x=0;x<fieldArray.length;x++){
                     temp.push(fieldArray[x].slice(0));
                 }
                 temp[field[0]][field[1]] = 1;
 
                 checkTowerPos.pos = [field[0],field[1]];
                 pathfinderUD.setGrid(swapGrid(temp), 0);
-                pathfinderUD.setCallbackFunction(function(path1)
-                {
-                    if (path1 !== null && path1.length !== 0)
-                    {
+                pathfinderUD.setCallbackFunction(function(path1){
+                    if (path1 !== null && path1.length !== 0){
                         pathfinderLR.setGrid(swapGrid(temp), 0);
                         pathfinderLR.setCallbackFunction(function(path2){
                             if (path2 !== null && path2.length !== 0){
                                 placeTower();
                             }
+                            else{
+                                blocked.alpha = 0.8;
+                            }
                         });
                         pathfinderLR.preparePathCalculation([0, 7], [14,7]);
                         pathfinderLR.calculatePath();
                     }
+                    else{
+                        blocked.alpha = 0.8;
+                    }
                 });
-                    /*
-                    checkTowerPos.checkUD = true;
-                    if (path !== null && path.length !== 0){
-                        checkTowerPos.UDOK = true;}
-                    else{
-                        checkTowerPos.UDOK = false;}});
-                pathfinderLR.setCallbackFunction(function(path){
-                    checkTowerPos.checkLR = true;
-                    if (path !== null && path.length !== 0){
-                        checkTowerPos.LROK = true;}
-                    else{
-                        checkTowerPos.UDOK = false;}});
-                */
                 pathfinderUD.preparePathCalculation([7, 0], [7,12]);
-                //pathfinderLR.preparePathCalculation([0, 7], [14,7]);
                 pathfinderUD.calculatePath();
-
-
                 checkTowerPos.towerType = selectedTower;
             }
             else
@@ -403,6 +373,7 @@ function selectTower(event){
 
 function bulletHit(bullet,monster){
     //console.log(monster.health+" "+bullet.damage)
+
     monster.health -= bullet.damage;
     if (monster.health <= 0)
     {
@@ -418,8 +389,10 @@ function bulletHit(bullet,monster){
         scale = monster.health / monster.startHealth;
         monster.scale.setTo(scale, scale);
     }
-    bullet.exists = false;
-    bullet.kill();
+
+    //bullet.exists = false;
+    //bullet.kill();
+    bullet.alive = false;
     //bullets.remove(bullet);
 }
 
@@ -486,31 +459,47 @@ function convertReal2Matrix(pos){
     return [currentFieldX,currentFieldY];
 }
 
+function ResetGame(){
+    console.log("Resetting game.");
+    money = 50;
+    life = 20;
+    kill = 0;
+    counter = 0;
+    running = false;
+    changeKill();
+    changeLife();
+    changeMoney();
+    for (x=0;x<15;x++){
+        for (y=0;y<13;y++){
+            fieldArray[x][y] = matrix[y * 15 + x];
+        }
+    }
+    monsters.removeAll();
+    bullets.removeAll();
+    guns.removeAll();
+    gunArray = [];
+    monsterArray = [];
+}
+
 function update(){
     counter++;
     game.physics.arcade.overlap(bullets, monsters, bulletHit, null, this);
 
-    if (running )
-    {
-
-        if ( counter  >= 180)
-        {
+    if (running ){
+        if ( counter  >= 180){
             counter = 0;
             // should be 3* a second
             // Release a enemy
-            if (Math.floor(Math.random()*10) % 2 === 0)
-            {
+            if (Math.floor(Math.random()*10) % 2 === 0){
                 // up down
                 monster = monsters.create(450, 50 , 'monster01');
                 monster.dir = "ud";
             }
-            else
-            {
+            else{
                 //left right
                 monster = monsters.create(50, 350 , 'monster01');
                 monster.dir = "lr";
             }
-            //monster = monsters.create(50, 350 , 'monster01');
             monsterArray.push(monster);
             monster.speed = 100;
             monster.body.velocity.x = 0;
@@ -529,7 +518,12 @@ function update(){
             monster.pathPos = 1;
         }
     }
-
+    if (blocked.alpha > 0.04){
+        blocked.alpha -= 0.02;
+    }
+    else{
+        blocked.alpha = 0;
+    }
 
     for (g=0;g<gunArray.length;g++)
     {
@@ -557,15 +551,14 @@ function update(){
             if (gun.counter >= gun.speed )
             {
                 gun.counter = 0;
+                gun.anchor.setTo(0.5, 0.5);
                 var bullet = bullets.create(gun.position.x - 5, gun.position.y - 5, 'bullets', gun.type - 1);
-                //bullet.frame = gun.type - 1;
+
                 // gun.type 12 ==> turret 2 upgrade 1 so 2*5*2= 20
                 // gun.type 01 ==> turret 2 upgrade 1 so 1*5*1= 5
                 // gun.type 51 ==> turret 2 upgrade 1 so 1*5*5= 25
                 bullet.damage = (gun.type%10)*5*(1+Math.floor(gun.type/10));
-                gun.anchor.setTo(0.5, 0.5);
-                //bulletArray.push(bullet);
-                //bullet.body.rotation = game.physics.arcade.angleBetween(monster,gun);
+                bullet.alive = true;
                 bullet.body.velocity = game.physics.arcade.velocityFromRotation(game.physics.arcade.angleBetween(monster,gun)+Math.PI, 400 - gun.type*100);
             }
         }
@@ -595,7 +588,7 @@ function update(){
             ///*
             if (monster.needsUpdate)
             {
-                //console.log("new cal");
+                //console.log("New calculation!");
                 calculateNewPath(monster);
                 monster.pathPos = 1;
                 monster.needsUpdate = false;
@@ -646,7 +639,7 @@ function update(){
             else
             {
                 //fieldY === monY
-                console.log("fieldY === monY");
+                //console.log("fieldY === monY");
                 if (goToRealX > monX)
                 {
                     monster.body.velocity.x = monster.speed;
@@ -668,7 +661,7 @@ function update(){
         else if (Math.abs(goToRealX - monX) < Math.abs(goToRealY - monY) || Math.abs(goToRealY - monY) <= 2)
         {
             // move in X
-            console.log("move in X");
+            //console.log("move in X");
             if (goToRealX > monX)
             {
                 monster.body.velocity.x = monster.speed;
@@ -730,35 +723,13 @@ function update(){
     monsterArray = monsterArray.filter(function (monster){
         return (monster.alive);
     });
+
     bullets.forEachExists(function (bullet){
-        if (bullet.body.position.x > 750 || bullet.body.position.x < 100 || bullet.body.position.y > 650||bullet.body.position.y < 100){
+        if ((bullet.body.position.x > 750 || bullet.body.position.x < 100 || bullet.body.position.y > 650||bullet.body.position.y < 100) || !bullet.alive){
             bullet.exists = false;
             bullet.kill();
             //bullet.remove();
         }
     });
 
-}
-
-function ResetGame()
-{
-    console.log("Resetting game.");
-    money = 50;
-    life = 20;
-    kill = 0;
-    counter = 0;
-    running = false;
-    changeKill();
-    changeLife();
-    changeMoney();
-    for (x=0;x<15;x++){
-        for (y=0;y<13;y++){
-            fieldArray[x][y] = matrix[y * 15 + x];
-        }
-    }
-    monsters.removeAll();
-    bullets.removeAll();
-    guns.removeAll();
-    gunArray = [];
-    monsterArray = [];
 }
