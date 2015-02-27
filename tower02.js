@@ -5,19 +5,23 @@ Tower Defence.
 game field is 100,100 x 750x650
 
 TODO:
-- add remove tower
 - add sound
 - add kill animation
 - add waves
 - add colors to monsters
-- add blocksizes for better resizing
+- fix blocksizes bug
 - add multiple towers
 - add upgrades
 - add half size to level
 */
 
-var width = 1000;
-var heigth = 700;
+var blockSize = 50;
+
+var matrixSizeX = 15;
+var matrixSizeY = 13;
+
+var width = 20 * blockSize; //1000
+var heigth = 14 * blockSize; //700
 var game = new Phaser.Game(width, heigth, Phaser.AUTO, '', { preload: preload, create: create, update: update });
 
 var towerBase;
@@ -105,13 +109,14 @@ function preload(){
 function create(){
     game.physics.startSystem(Phaser.Physics.ARCADE);
     bg = game.add.sprite(0, 0, 'field');
+    bg.scale.setTo(20 * blockSize/1000, 14 * blockSize/700);
     blocked = game.add.sprite(Math.round(width/3),Math.round(heigth/2),"blocked");
-    blocked.scale.setTo(0.5,0.5);
+    blocked.scale.setTo(0.5 * blockSize/50,0.5 * blockSize/50);
     blocked.alpha = 0;
 
-    for (x=0;x<15;x++){
-        for (y=0;y<13;y++){
-            fieldArray[x][y] = matrix[y * 15 + x];
+    for (x = 0;x < matrixSizeX;x++){
+        for (y = 0;y < matrixSizeY;y++){
+            fieldArray[x][y] = matrix[y * matrixSizeX + x];
         }
     }
 
@@ -125,41 +130,54 @@ function create(){
 
 
     numbers = game.add.group();
-    lifeDigit100 = numbers.create(145, 5, 'numbers',0);
-    lifeDigit10 = numbers.create(180, 5, 'numbers',0);
-    lifeDigit1 = numbers.create(215, 5, 'numbers',0);
-
+    lifeDigit100 = numbers.create(3 * blockSize + 0 * 0.7 * blockSize, 5, 'numbers',0); //150
+    lifeDigit10 = numbers.create(3 * blockSize + 1 * 0.7 * blockSize, 5, 'numbers',0); //185
+    lifeDigit1 = numbers.create(3 * blockSize + 2 * 0.7 * blockSize, 5, 'numbers',0); //220
+    lifeDigit100.scale.setTo(blockSize/50,blockSize/50);
+    lifeDigit10.scale.setTo(blockSize/50,blockSize/50);
+    lifeDigit1.scale.setTo(blockSize/50,blockSize/50);
     changeLife(life);
 
-    killDigit100 = numbers.create(360, 5, 'numbers',0);
-    killDigit10 = numbers.create(395, 5, 'numbers',0);
-    killDigit1 = numbers.create(430, 5, 'numbers',0);
-
+    killDigit100 = numbers.create(7 * blockSize + 0 * 0.7 * blockSize, 5, 'numbers',0);
+    killDigit10 = numbers.create(7 * blockSize + 1 * 0.7 * blockSize, 5, 'numbers',0);
+    killDigit1 = numbers.create(7 * blockSize + 2 * 0.7 * blockSize, 5, 'numbers',0);
+    killDigit100.scale.setTo(blockSize/50,blockSize/50);
+    killDigit10.scale.setTo(blockSize/50,blockSize/50);
+    killDigit1.scale.setTo(blockSize/50,blockSize/50);
     changeKill(kill);
 
-    moneyDigit1000 = numbers.create(560, 5, 'numbers',0);
-    moneyDigit100 = numbers.create(595, 5, 'numbers',0);
-    moneyDigit10 = numbers.create(630, 5, 'numbers',0);
-    moneyDigit1 = numbers.create(665, 5, 'numbers',0);
-
+    moneyDigit1000 = numbers.create(11 * blockSize + 0 * 0.7 * blockSize, 5, 'numbers',0);
+    moneyDigit100 = numbers.create(11 * blockSize + 1 * 0.7 * blockSize, 5, 'numbers',0);
+    moneyDigit10 = numbers.create(11 * blockSize + 2 * 0.7 * blockSize, 5, 'numbers',0);
+    moneyDigit1 = numbers.create(11 * blockSize + 3 * 0.7 * blockSize, 5, 'numbers',0);
+    moneyDigit1000.scale.setTo(blockSize/50,blockSize/50);
+    moneyDigit100.scale.setTo(blockSize/50,blockSize/50);
+    moneyDigit10.scale.setTo(blockSize/50,blockSize/50);
+    moneyDigit1.scale.setTo(blockSize/50,blockSize/50);
     changeMoney(money);
 
     items = game.add.group();
 
-    towerBase = items.create(800,100, 'guns',2);
-    gun01 = items.create(800,100, 'guns',0);
+    towerBase = items.create(16 * blockSize,2 * blockSize, 'guns',2);
+    towerBase.scale.setTo(blockSize/50,blockSize/50);
+    gun01 = items.create(16 * blockSize,2 * blockSize, 'guns',0);
+    gun01.scale.setTo(blockSize/50,blockSize/50);
     gun01.inputEnabled = true;
     gun01.events.onInputDown.add(selectTower);
     towerPrice[1] = 5;
 
-    towerBase = items.create(850,100, 'guns',2);
-    gun02 = items.create(850,100, 'guns',1);
+    towerBase = items.create(17 * blockSize,2 * blockSize, 'guns',2);
+    towerBase.scale.setTo(blockSize/50,blockSize/50);
+    gun02 = items.create(17 * blockSize,2 * blockSize, 'guns',1);
+    gun02.scale.setTo(blockSize/50,blockSize/50);
     gun02.inputEnabled = true;
     gun02.events.onInputDown.add(selectTower);
     towerPrice[2] = 10;
 
-    towerBase = items.create(800,300, 'guns',2);
-    removeTower = items.create(800,300, 'guns',5);
+    towerBase = items.create(16 * blockSize,6 * blockSize, 'guns',2);
+    towerBase.scale.setTo(blockSize/50,blockSize/50);
+    removeTower = items.create(16 * blockSize,6 * blockSize, 'guns',5);
+    removeTower.scale.setTo(blockSize/50,blockSize/50);
     removeTower.inputEnabled = true;
     removeTower.events.onInputDown.add(selectTower);
 
@@ -249,7 +267,8 @@ function selectTower(event){
         else{
             selectedTower = 1;
             if (selected){selected.destroy();}
-            selected = items.create(800,100, 'guns');
+            selected = items.create(16 * blockSize,2 * blockSize, 'guns');
+            selected.scale.setTo(blockSize/50,blockSize/50);
             selected.frame = 3;
         }
     }
@@ -261,7 +280,8 @@ function selectTower(event){
         else{
             selectedTower = 2;
             if (selected){selected.destroy();}
-            selected = items.create(850,100, 'guns');
+            selected = items.create(17 * blockSize,2 * blockSize, 'guns');
+            selected.scale.setTo(blockSize/50,blockSize/50);
             selected.frame = 3;
         }
     }
@@ -273,7 +293,8 @@ function selectTower(event){
         else{
             selectedTower = 9;
             if (selected){selected.destroy();}
-            selected = items.create(800,300, 'guns');
+            selected = items.create(16 * blockSize,6 * blockSize, 'guns');
+            selected.scale.setTo(blockSize/50,blockSize/50);
             selected.frame = 3;
         }
 }
@@ -288,12 +309,16 @@ function placeTower(){
     realPos = convertMatrix2Real(checkTowerPos.pos);
 
     towerBase = guns.create(realPos[0],realPos[1], 'guns', 2);
+    towerBase.scale.setTo(blockSize/50,blockSize/50);
     towerBase.matrixPos = [checkTowerPos.pos[0],checkTowerPos.pos[1]];
 
     towerBaseArray.push(towerBase);
 
-    var gun = guns.create(realPos[0] + 25, realPos[1] + 25, 'guns',checkTowerPos.towerType - 1);
-    gun.anchor.setTo(0.5, 0.5);
+    var gun = guns.create(realPos[0] + 25 * blockSize/50, realPos[1] + 25 * blockSize/50, 'guns',checkTowerPos.towerType - 1);
+    gun.scale.setTo(blockSize/50,blockSize/50);
+    //gun.anchor.setTo(1 - (0.5 * blockSize/50), 1 - (0.5 * blockSize/50));
+    gun.anchor.setTo(0.5,0.5);
+
     gun.type = checkTowerPos.towerType;
     gun.range = 200;
     gun.speed = checkTowerPos.towerType * 50;
@@ -321,7 +346,7 @@ function findInMatrix(array, pos){
 
 function click(event){
     // Check if we click in field
-    if (event.x >100 && event.x<750 && event.y>100 && event.y<650 ){
+    if (event.x > 2 * blockSize && event.x < 15 * blockSize && event.y > 2 * blockSize && event.y < 13 * blockSize ){
         if (pauseState === false && resetState === false){
             field = convertReal2Matrix([event.x,event.y]);
             // which tower?
@@ -393,14 +418,14 @@ function click(event){
     }
 
     // start button
-    if (event.x >800 && event.x<1000 && event.y>600 && event.y<650 ){
+    if (event.x > 16 * blockSize && event.x < 20 * blockSize && event.y > 12 * blockSize && event.y < 13 * blockSize ){
         //Start button was pressed
         console.log("start pressed");
         running = true;
     }
 
     // pause button
-    if (event.x >800 && event.x<1000 && event.y>550 && event.y<600 ){
+    if (event.x >16 * blockSize && event.x < 20 * blockSize && event.y > 11 * blockSize && event.y < 12 * blockSize ){
         //Pause button was pressed
 
         if(game.paused)
@@ -415,13 +440,14 @@ function click(event){
             game.paused = true;
             pauseState = true;
             reset = game.add.sprite(width/2, heigth/2, 'reset');
+            reset.scale.setTo(blockSize/50,blockSize/50);
             resetState = true;
             console.log("games paused");
         }
     }
 
     // reset button
-    if (resetState && event.x >= width/2 && event.x <= width/2+350 && event.y >= heigth/2 && event.y<= heigth/2 +100){
+    if (resetState && event.x >= width/2 && event.x <= width/2 + 7 * blockSize && event.y >= heigth/2 && event.y<= heigth/2 + 2 * blockSize){
         resetGame();
         reset.destroy();
         if (gameOverState){
@@ -442,22 +468,18 @@ function bulletHit(bullet,monster){
     if (monster.health <= 0)
     {
         monster.destroy();
-        //monster.alive = false;
-        //monster.exists = false;
         kill++;
         changeKill();
         money += monster.price;
         changeMoney();
     }
     else{
-        //scale = monster.health / monster.startHealth;
+        scale = monster.health / monster.startHealth;
         //monster.scale.setTo(scale, scale);
+        monster.alpha = scale;
     }
 
     bullet.exists = false;
-    //bullet.destroy();
-    //bullet.alive = false;
-    //bullets.remove(bullet);
 }
 
 function calculateNewPath(monster){
@@ -495,18 +517,18 @@ function calculateNewPath(monster){
 }
 
 function convertMatrix2Real(pos){
-    fieldX = Math.round(pos[0] * 50 + 50);
-    fieldY = Math.round(pos[1] * 50 + 50);
-    if (fieldX < 100)
-    {fieldX = 100;}
-    if (fieldY<100)
-    {fieldY = 100;}
+    fieldX = Math.round(pos[0] * blockSize + blockSize);
+    fieldY = Math.round(pos[1] * blockSize + blockSize);
+    if (fieldX < 2 * blockSize)
+    {fieldX = 2 * blockSize;}
+    if (fieldY < 2 * blockSize)
+    {fieldY = 2 * blockSize;}
     return [fieldX,fieldY];
 }
 
 function convertReal2Matrix(pos){
-    currentFieldX = Math.floor((Math.round(pos[0]))/50) -1;
-    currentFieldY = Math.floor((Math.round(pos[1]))/50) -1;
+    currentFieldX = Math.floor((Math.round(pos[0]))/blockSize) -1;
+    currentFieldY = Math.floor((Math.round(pos[1]))/blockSize) -1;
     if (currentFieldX < 0){
         currentFieldX=0;
         }
@@ -533,8 +555,8 @@ function resetGame(){
     changeKill();
     changeLife();
     changeMoney();
-    for (x=0;x<15;x++){
-        for (y=0;y<13;y++){
+    for (x = 0; x < matrixSizeX; x++){
+        for (y = 0; y < matrixSizeY; y++){
             fieldArray[x][y] = matrix[y * 15 + x];
         }
     }
@@ -542,7 +564,7 @@ function resetGame(){
     bullets.removeAll();
     guns.removeAll();
     gunArray = [];
-    monsterArray = [];
+    //monsterArray = [];
 }
 
 function update(){
@@ -557,15 +579,15 @@ function update(){
             // Release a enemy
             if (Math.floor(Math.random()*10) % 2 === 0){
                 // up down
-                monster = monsters.create(450, 50 , 'monster01');
+                monster = monsters.create(9 * blockSize,  blockSize , 'monster01');
                 monster.dir = "ud";
             }
             else{
                 //left right
-                monster = monsters.create(50, 350 , 'monster01');
+                monster = monsters.create(blockSize, 7 * blockSize , 'monster01');
                 monster.dir = "lr";
             }
-            monsterArray.push(monster);
+            monster.scale.setTo(blockSize/50,blockSize/50);
             monster.speed = 100;
             monster.body.velocity.x = 0;
             monster.body.velocity.y = 0;
@@ -582,33 +604,32 @@ function update(){
             monster.newPathFound = false;
             monster.pathPos = 1;
             color = Math.floor(Math.random() * 0xffffff);
-            console.log(color.toString(16));
             monster.tint = color;
+
+            //monsterArray.push(monster);
         }
     }
 
-
     // check up on guns
-    for (g=0;g<gunArray.length;g++){
-        gun = gunArray[g];
+    guns.forEach(function(gun){
         gun.counter++;
         closest = gun.range + 1;
-        monster = null;
-        for (m = 0; m < monsterArray.length; m++){
-            delta = game.physics.arcade.distanceBetween(gun,monsterArray[m]);
+        closestMonster = null;
+        monsters.forEach(function(monster){
+            delta = game.physics.arcade.distanceBetween(gun,monster);
             if ( delta < gun.range && delta < closest){
                 closest = delta;
-                monster = monsterArray[m];
+                closestMonster = monster;
             }
-        }
-        if (monster){
+        });
+        if (closestMonster){
             gun.body.rotation = game.physics.arcade.angleBetween(monster,gun)* 180 / Math.PI + 180+90;
             if (gun.counter >= gun.speed )
             {
                 gun.counter = 0;
                 gun.anchor.setTo(0.5, 0.5);
                 var bullet = bullets.create(gun.position.x - 5, gun.position.y - 5, 'bullets', gun.type - 1);
-
+                bullet.scale.setTo(blockSize/50,blockSize/50);
                 // gun.type 12 ==> turret 2 upgrade 1 so 2*5*2= 20
                 // gun.type 01 ==> turret 2 upgrade 1 so 1*5*1= 5
                 // gun.type 51 ==> turret 2 upgrade 1 so 1*5*5= 25
@@ -618,169 +639,157 @@ function update(){
                 bullet.body.velocity = game.physics.arcade.velocityFromRotation(game.physics.arcade.angleBetween(monster,gun)+Math.PI, 400 - gun.type*100);
             }
         }
-        else
-        {
-            // no monster in range stop shooting
-        }
-
-
-    }
+    });
 
     // check up on monsters
-    for (i=0;i<monsterArray.length;i++){
-        monster = monsterArray[i];
+    monsters.forEach(function(monster){
+        if (monster !== undefined){
+            goToRealX = convertMatrix2Real(monster.goTo)[0];
+            goToRealY = convertMatrix2Real(monster.goTo)[1];
 
-        goToRealX = convertMatrix2Real(monster.goTo)[0];
-        goToRealY = convertMatrix2Real(monster.goTo)[1];
+            monX = Math.round(monster.body.position.x);
+            monY = Math.round(monster.body.position.y);
+            blockSizeCorrection = Math.round(blockSize/10);
+            if (Math.abs(goToRealX - monX) <= 2 * blockSizeCorrection &&
+                Math.abs(goToRealY - monY) <= 2 * blockSizeCorrection ||
+                monX <= 2 * blockSize - blockSizeCorrection ||
+                monY <= 2 * blockSize - blockSizeCorrection){
+                // monster has reached it's goto position.
+                //calculateNewPath(monster);
 
-        monX = Math.round(monster.body.position.x);
-        monY = Math.round(monster.body.position.y);
-        if (Math.abs(goToRealX - monX) <= 10 && Math.abs(goToRealY - monY) <= 10 || monX <=95 || monY <= 95)
-        {
-            // monster has reached it's goto position.
-            //calculateNewPath(monster);
-            ///*
-            if (monster.needsUpdate)
-            {
-                //console.log("New calculation!");
-                calculateNewPath(monster);
-                monster.pathPos = 1;
-                monster.needsUpdate = false;
-            }
-            if (monster.newPathFound && !monster.needsUpdate &&  monX > 95 && monY > 95){
-                monster.pathPos++;
-                if (monster.pathPos >= monster.path.length){
-                    monster.pathPos = monster.path.length - 1;
-                }
-                //monster.newPathFound = false;
-                //console.log(monster.pathPos+":"+monster.path[monster.pathPos]+" goto: "+monster.goTo[0]+","+monster.goTo[1]+" field: "+ goToRealX+","+goToRealY);
-                monster.goTo[0] = monster.path[monster.pathPos][0];
-                monster.goTo[1] = monster.path[monster.pathPos][1];
-            }//*/
-        }
-
-        //currentField = convertReal2Matrix([monster.body.position.x,monster.body.position.y]);
-
-        //console.log("current: "+monX+","+monY+" - "+currentgoToRealX+","+currentgoToRealY+" goto: "+goToRealX+","+goToRealY+" - "+monster.goTo[0]+","+monster.goTo[1])
-        if (monX <= 95)
-        {
-            // always first push them into the field.
-            monster.body.velocity.y = 0;
-            monster.body.velocity.x = monster.speed;
-
-        }
-        else if (monY <= 95)
-        {
-            // always first push them into the field.
-            monster.body.velocity.x = 0;
-            monster.body.velocity.y = monster.speed;
-
-        }
-        else if (Math.abs(goToRealX - monX) >= Math.abs(goToRealY - monY) || Math.abs(goToRealX - monX)<=2)
-        {
-            // move in Y
-
-            if (goToRealY > monY)
-            {
-                monster.body.velocity.y = monster.speed;
-                monster.body.velocity.x = 0;
-            }
-            else if (goToRealY < monY)
-            {
-                monster.body.velocity.y = -monster.speed;
-                monster.body.velocity.x = 0;
-            }
-            else
-            {
-                //fieldY === monY
-                //console.log("fieldY === monY");
-                if (goToRealX > monX)
+                if (monster.needsUpdate)
                 {
-                    monster.body.velocity.x = monster.speed;
-                    monster.body.velocity.y = 0;
+                    //console.log("New calculation!");
+                    calculateNewPath(monster);
+                    monster.pathPos = 1;
+                    monster.needsUpdate = false;
                 }
-                else if (goToRealX < monX)
-                {
-                    monster.body.velocity.x = -monster.speed;
-                    monster.body.velocity.y = 0;
-                }
-                else
-                {
-                    console.log("velo 0!");
-                    monster.body.velocity.x = 0;
-                    monster.body.velocity.y = 0;
+                if (monster.newPathFound && !monster.needsUpdate &&
+                    monX > 2 * blockSize - blockSizeCorrection &&
+                    monY > 2 * blockSize - blockSizeCorrection ){
+                    monster.pathPos++;
+                    if (monster.pathPos >= monster.path.length){
+                        monster.pathPos = monster.path.length - 1;
+                    }
+                    //monster.newPathFound = false;
+                    console.log(monster.pathPos+":"+monster.path[monster.pathPos]+" goto: "+monster.goTo[0]+","+monster.goTo[1]+" field: "+ goToRealX+","+goToRealY);
+                    monster.goTo[0] = monster.path[monster.pathPos][0];
+                    monster.goTo[1] = monster.path[monster.pathPos][1];
+                    goToRealX = convertMatrix2Real(monster.goTo)[0];
+                    goToRealY = convertMatrix2Real(monster.goTo)[1];
+                    console.log(monster.pathPos+":"+monster.path[monster.pathPos]+" goto: "+monster.goTo[0]+","+monster.goTo[1]+" field: "+ goToRealX+","+goToRealY);
+
                 }
             }
-        }
-        else if (Math.abs(goToRealX - monX) < Math.abs(goToRealY - monY) || Math.abs(goToRealY - monY) <= 2)
-        {
-            // move in X
-            //console.log("move in X");
-            if (goToRealX > monX)
-            {
+
+
+            //currentField = convertReal2Matrix([monster.body.position.x,monster.body.position.y]);
+
+            //console.log("current: "+monX+","+monY+" - "+currentgoToRealX+","+currentgoToRealY+" goto: "+goToRealX+","+goToRealY+" - "+monster.goTo[0]+","+monster.goTo[1])
+            if (monX <= 2 * blockSize - blockSizeCorrection){
+                // always first push them into the field.
+                monster.body.velocity.y = 0;
                 monster.body.velocity.x = monster.speed;
-                monster.body.velocity.y = 0;
+
             }
-            else if (goToRealX < monX)
-            {
-                monster.body.velocity.x = -monster.speed;
-                monster.body.velocity.y = 0;
+            else if (monY <= 2 * blockSize - 5){
+                // always first push them into the field.
+                monster.body.velocity.x = 0;
+                monster.body.velocity.y = monster.speed;
+
             }
-            else
-            {
-                // fieldX === monX
-                console.log("fieldX === monX");
-                if (goToRealY > monY)
-                {
+            else if (Math.abs(goToRealX - monX) >= Math.abs(goToRealY - monY) ||
+                     Math.abs(goToRealX - monX) <= Math.floor(blockSizeCorrection/2)){
+                // move in Y
+                if (goToRealY > monY){
                     monster.body.velocity.y = monster.speed;
                     monster.body.velocity.x = 0;
                 }
-                else if (goToRealY < monY)
-                {
+                else if (goToRealY < monY){
                     monster.body.velocity.y = -monster.speed;
                     monster.body.velocity.x = 0;
                 }
-                else
-                {
-                    console.log("velo 0!");
-                    monster.body.velocity.x = 0;
-                    monster.body.velocity.y = 0;
+                else{
+                    //fieldY === monY
+                    //console.log("fieldY === monY");
+                    if (goToRealX > monX){
+                        monster.body.velocity.x = monster.speed;
+                        monster.body.velocity.y = 0;
+                    }
+                    else if (goToRealX < monX){
+                        monster.body.velocity.x = -monster.speed;
+                        monster.body.velocity.y = 0;
+                    }
+                    else{
+                        console.log("velo 0!");
+                        monster.body.velocity.x = 0;
+                        monster.body.velocity.y = 0;
+                    }
                 }
             }
-            //console.log("Velo: "+monster.body.velocity.x +","+monster.body.velocity.y );
-
-        }
-
-        //console.log("monster pos: "+currentFieldX+" "+currentFieldY)
-
-
-        if (monster.body.position.x >= 745 || monster.body.position.y >= 645)
-        {
-            // They made it!
-            monster.destroy();
-            monster.alive = false;
-            life--;
-            changeLife();
-            if (life <= 0)
-            {
-                //Game Over!
-                gameOver = game.add.sprite(Math.round(width/4), Math.round(heigth/4), 'gameover');
-                if (game.paused === false) {game.paused = true;}
-                reset = game.add.sprite(width/2, heigth/2, 'reset');
-                resetState = true;
-                gameOverState = true;
+            else if (Math.abs(goToRealX - monX) < Math.abs(goToRealY - monY) ||
+                     Math.abs(goToRealY - monY) <= Math.floor(blockSizeCorrection/2)){
+                // move in X
+                //console.log("move in X");
+                if (goToRealX > monX){
+                    monster.body.velocity.x = monster.speed;
+                    monster.body.velocity.y = 0;
+                }
+                else if (goToRealX < monX){
+                    monster.body.velocity.x = -monster.speed;
+                    monster.body.velocity.y = 0;
+                }
+                else{
+                    // fieldX === monX
+                    console.log("fieldX === monX");
+                    if (goToRealY > monY){
+                        monster.body.velocity.y = monster.speed;
+                        monster.body.velocity.x = 0;
+                    }
+                    else if (goToRealY < monY){
+                        monster.body.velocity.y = -monster.speed;
+                        monster.body.velocity.x = 0;
+                    }
+                    else{
+                        console.log("velo 0!");
+                        monster.body.velocity.x = 0;
+                        monster.body.velocity.y = 0;
+                    }
+                }
+                //console.log("Velo: "+monster.body.velocity.x +","+monster.body.velocity.y );
             }
+            //console.log("monster pos: "+currentFieldX+" "+currentFieldY)
 
+            if (monster.body.position.x >= (matrixSizeX * blockSize) - blockSizeCorrection ||
+                monster.body.position.y >= (matrixSizeY * blockSize) - blockSizeCorrection )
+            {
+                // They made it!
+                monsters.remove(monster,true);
+                //monster.alive = false;
+                life--;
+                changeLife();
+                if (life <= 0)
+                {
+                    //Game Over!
+                    gameOver = game.add.sprite(Math.round(width/4), Math.round(heigth/4), 'gameover');
+                    gameOver.scale.setTo(blockSize/50,blockSize/50);
+                    if (game.paused === false) {game.paused = true;}
+                    reset = game.add.sprite(width/2, heigth/2, 'reset');
+                    resetState = true;
+                    gameOverState = true;
+                }
+
+            }
         }
-    }
-
-    monsterArray = monsterArray.filter(function(monster){
-        return (monster.alive);
     });
+
+    /*monsterArray = monsterArray.filter(function(monster){
+        return (monster.alive);
+    });*/
 
     // check up on bullets
     bullets.forEachExists(function (bullet){
-        if ((bullet.body.position.x > 750 || bullet.body.position.x < 100 || bullet.body.position.y > 650||bullet.body.position.y < 100) ){
+        if ((bullet.body.position.x > 15 * blockSize || bullet.body.position.x < 2 * blockSize || bullet.body.position.y > 13 * blockSize||bullet.body.position.y < 2 * blockSize) ){
             bullet.exists = false;
             //bullet.destroy();
             //bullet.remove();
