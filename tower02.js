@@ -5,14 +5,17 @@ Tower Defence.
 game field is 100,100 x 750x650
 
 TODO:
-- add sound
-- add kill animation
+- add different monsters
 - add waves
-- add colors to monsters
-- fix blocksizes bug
+
 - add multiple towers
 - add upgrades
+
+- add kill animation
 - add half size to level
+- update sound
+- fix blocksizes bug
+
 */
 
 var blockSize = 50;
@@ -104,10 +107,18 @@ function preload(){
     game.load.image      ('reset'    , 'assets/reset.png'            );
     game.load.image      ('gameover' , 'assets/game over.png'        );
     game.load.image      ('blocked'  , 'assets/blocked.png'          );
+    game.load.audio      ("pop"      , 'assets/pop.m4a'              );
+    game.load.audio      ("splash"   , 'assets/splash.m4a'           );
+    game.load.audio      ("build"    , 'assets/build.m4a'            );
 }
 
 function create(){
     game.physics.startSystem(Phaser.Physics.ARCADE);
+
+    build = game.add.audio('build');
+    pop = game.add.audio('pop');
+    splash = game.add.audio('splash');
+
     bg = game.add.sprite(0, 0, 'field');
     bg.scale.setTo(20 * blockSize/1000, 14 * blockSize/700);
     blocked = game.add.sprite(Math.round(width/3),Math.round(heigth/2),"blocked");
@@ -327,6 +338,8 @@ function placeTower(){
 
     gunArray.push(gun);
 
+    build.play();
+
     //game.world.bringToTop(gun);
 
     fieldArray[checkTowerPos.pos[0]][checkTowerPos.pos[1]] = checkTowerPos.towerType;
@@ -472,6 +485,8 @@ function bulletHit(bullet,monster){
         changeKill();
         money += monster.price;
         changeMoney();
+
+        splash.play();
     }
     else{
         scale = monster.health / monster.startHealth;
@@ -637,6 +652,8 @@ function update(){
                 bullet.alive = true;
                 bullet.lifespan = 500;
                 bullet.body.velocity = game.physics.arcade.velocityFromRotation(game.physics.arcade.angleBetween(monster,gun)+Math.PI, 400 - gun.type*100);
+
+                pop.play();
             }
         }
     });
