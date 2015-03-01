@@ -5,17 +5,18 @@ Tower Defence.
 game field is 100,100 x 750x650
 
 TODO:
-- add different monsters
-- add waves
-
 - add multiple towers
 - add upgrades
+
+- add more monsters
+
+- add live bar
 
 - add kill animation
 - add half size to level
 - update sound
 - fix blocksizes bug
-
+- make counter bar nicer
 */
 
 var blockSize = 50;
@@ -39,7 +40,7 @@ var monsterArray = [];
 var bulletArray = [];
 var gunArray = [];
 var towerBaseArray =[];
-var money = 50;
+var money = 100;
 var life = 20;
 var kill = 0;
 var towerPrice =[];
@@ -52,42 +53,76 @@ var gameOver;
 var pauseState = false;
 var counter = 0;
 
+var currentWave = 0;
+var currentMonster = 0;
+var timer = 180;
+var counter = 1000;
+var towerRange;
+var bar;
+
 
 // watch out it is mirrored!
 // 15x13
 var matrix = [
-//0 1  2  3  4  5  6  7  8  9  10 11 12 13 14
- 1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1,//0
- 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,//1
- 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,//2
- 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,//3
- 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,//4
- 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,//5
- 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,//6
- 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,//7
- 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,//8
- 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,//9
- 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,//10
- 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,//11
- 1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1];//12
+    //0 1  2  3  4  5  6  7  8  9  10 11 12 13 14
+     1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1,//0
+     1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,//1
+     1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,//2
+     1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,//3
+     1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,//4
+     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,//5
+     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,//6
+     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,//7
+     1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,//8
+     1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,//9
+     1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,//10
+     1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,//11
+     1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1];//12
 
- var fieldArray = [
- [9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9], //0
- [9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9], //1
- [9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9], //2
- [9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9], //3
- [9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9], //4
- [9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9], //5
- [9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9], //6
- [9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9], //7
- [9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9], //8
- [9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9], //9
- [9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9], //10
- [9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9], //11
- [9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9], //12
- [9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9], //13
- [9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9]]; //14
+var fieldArray = [
+    [9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9], //0
+    [9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9], //1
+    [9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9], //2
+    [9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9], //3
+    [9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9], //4
+    [9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9], //5
+    [9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9], //6
+    [9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9], //7
+    [9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9], //8
+    [9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9], //9
+    [9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9], //10
+    [9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9], //11
+    [9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9], //12
+    [9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9], //13
+    [9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9]]; //14
 
+var waves = [
+    {order :[2,2,2,2,2],                                     betweenMonstersTime :180 ,betweenWavesTime: 500},
+    {order :[1,1,1,1,1],                                     betweenMonstersTime :180 ,betweenWavesTime: 500},
+    {order :[1,2,1,2,1],                                     betweenMonstersTime :180 ,betweenWavesTime: 500},
+    {order :[1,1,1,2,2,2],                                   betweenMonstersTime :180 ,betweenWavesTime: 500},
+    {order :[1,1,1,2,2,2,1,2],                               betweenMonstersTime :180 ,betweenWavesTime: 500},
+    {order :[1,1,1,2,2,2,1,2,1,2,1,2],                       betweenMonstersTime :180 ,betweenWavesTime: 500},
+    {order :[1,1,1,2,2,2,1,1,1,1,1,1,1,1],                   betweenMonstersTime :180 ,betweenWavesTime: 500},
+    {order :[1,1,1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2], betweenMonstersTime :180 ,betweenWavesTime: 500},
+    ];
+
+var monsterTypes = [];
+monsterTypes[1] = {
+    life : 200,
+    speed : 100,
+    image : "monster01",
+    price : 5,
+    color : 0xff0000,
+};
+
+monsterTypes[2] = {
+    life : 100,
+    speed : 50,
+    image : "monster02",
+    price : 2,
+    color : 0x00ff00,
+};
 
 var checkTowerPos = {
     pos : [0,0],
@@ -103,6 +138,7 @@ function preload(){
     game.load.spritesheet('guns'     , 'assets/guns.png'    ,50,50,6 );
     game.load.spritesheet('bullets'  , 'assets/bullets.png' ,10,10,5 );
     game.load.spritesheet('monster01', 'assets/baddie01.png',50,50,4 );
+    game.load.spritesheet('monster02', 'assets/baddie02.png',50,50,4 );
     game.load.spritesheet('numbers'  , 'assets/numbers.png' ,40,50,10);
     game.load.image      ('reset'    , 'assets/reset.png'            );
     game.load.image      ('gameover' , 'assets/game over.png'        );
@@ -200,6 +236,7 @@ function create(){
     bullets.enableBody = true;
     game.input.onDown.add(click, self);
 
+
 }
 
 function changeLife(){
@@ -278,9 +315,8 @@ function selectTower(event){
         else{
             selectedTower = 1;
             if (selected){selected.destroy();}
-            selected = items.create(16 * blockSize,2 * blockSize, 'guns');
+            selected = items.create(16 * blockSize,2 * blockSize, 'guns',3);
             selected.scale.setTo(blockSize/50,blockSize/50);
-            selected.frame = 3;
         }
     }
     else if (event.x >= gun02.position.x && event.x <= gun02.position.x && event.y >= gun02.position.y && event.y <= gun02.position.y){
@@ -291,9 +327,8 @@ function selectTower(event){
         else{
             selectedTower = 2;
             if (selected){selected.destroy();}
-            selected = items.create(17 * blockSize,2 * blockSize, 'guns');
+            selected = items.create(17 * blockSize,2 * blockSize, 'guns',3);
             selected.scale.setTo(blockSize/50,blockSize/50);
-            selected.frame = 3;
         }
     }
     else if (event.x >= removeTower.position.x && event.x <= removeTower.position.x && event.y >= removeTower.position.y && event.y <= removeTower.position.y)
@@ -308,6 +343,7 @@ function selectTower(event){
             selected.scale.setTo(blockSize/50,blockSize/50);
             selected.frame = 3;
         }
+    console.log("Selected tower is: "+selectedTower);
 }
 
 function placeTower(){
@@ -331,7 +367,7 @@ function placeTower(){
     gun.anchor.setTo(0.5,0.5);
 
     gun.type = checkTowerPos.towerType;
-    gun.range = 200;
+    gun.range = checkTowerPos.towerType * 25 + 50;
     gun.speed = checkTowerPos.towerType * 50;
     gun.counter = 0;
     gun.matrixPos = [checkTowerPos.pos[0],checkTowerPos.pos[1]];
@@ -372,6 +408,7 @@ function click(event){
                     temp[field[0]][field[1]] = 1;
 
                     checkTowerPos.pos = [field[0],field[1]];
+                    checkTowerPos.towerType = selectedTower;
                     pathfinderUD.setGrid(swapGrid(temp), 0);
                     pathfinderUD.setCallbackFunction(function(path1){
                         if (path1 !== null && path1.length !== 0){
@@ -379,6 +416,9 @@ function click(event){
                             pathfinderLR.setCallbackFunction(function(path2){
                                 if (path2 !== null && path2.length !== 0){
                                     placeTower();
+                                    if (towerRange){
+                                        towerRange.destroy();
+                                    }
                                 }
                                 else{
                                     blocked.alpha = 0.8;
@@ -393,17 +433,25 @@ function click(event){
                     });
                     pathfinderUD.preparePathCalculation([7, 0], [7,12]);
                     pathfinderUD.calculatePath();
-                    checkTowerPos.towerType = selectedTower;
+
                 }
                 else if (fieldArray[field[0]][field[1]] !== 0){
-                    // Select tower for upgrade
+                    // Select tower for upgrade and show range
                     placeX = event.x - event.x % 50;
                     placeY = event.y - event.y % 50;
-                    if (selectedInField){
-                        selectedInField.destroy();
-                        }
-                    selectedInField  = guns.create(placeX,placeY, 'guns');
-                    selectedInField.frame = 3;
+                    //if (selectedInField){
+                    //    selectedInField.destroy();
+                    //}
+                    if (towerRange){
+                        towerRange.destroy();
+                    }
+                    //selectedInField  = guns.create(placeX,placeY, 'guns',3);
+
+                    var graphics = game.add.graphics(0, 0);
+                    graphics.lineStyle(0);
+                    graphics.beginFill(0xffff00, 0.25);
+                    towerRange = graphics.drawCircle(placeX + blockSize/2, placeY + blockSize/2,2 * gunArray[findInMatrix(gunArray,field)].range);
+
                 }
             }
             // remove tower
@@ -425,6 +473,12 @@ function click(event){
                 if (index !== -1){
                     towerBaseArray[index].destroy();
                     towerBaseArray.splice(index,1);
+                }
+                if (selectedInField){
+                    selectedInField.destroy();
+                }
+                if (towerRange){
+                    towerRange.destroy();
                 }
             }
         }
@@ -562,7 +616,7 @@ function convertReal2Matrix(pos){
 
 function resetGame(){
     console.log("Resetting game.");
-    money = 50;
+    money = 100;
     life = 20;
     kill = 0;
     counter = 0;
@@ -579,66 +633,144 @@ function resetGame(){
     bullets.removeAll();
     guns.removeAll();
     gunArray = [];
+    if (towerRange){
+        towerRange.destroy();
+    }
     //monsterArray = [];
+}
+
+function attackClosestMonster(gun){
+    var monsterToAttack = null;
+    for (i=0;i<monsters.length;i++){
+        monster =monsters.getAt(i);
+        delta = game.physics.arcade.distanceBetween(gun,monster);
+        //console.log("Delta: "+delta);
+        if ( delta < gun.range && delta < closest){
+            closest = delta;
+            monsterToAttack = monster;
+        }
+    }
+    return monsterToAttack;
+}
+
+function attackWeakestMonster(gun){
+    var monsterToAttack = null;
+    var lowestLive = 1000;
+    for (i=0;i<monsters.length;i++){
+        monster =monsters.getAt(i);
+        delta = game.physics.arcade.distanceBetween(gun,monster);
+        //console.log("Delta: "+delta);
+        if ( delta < gun.range && monster.health < lowestLive){
+            lowestLive = monster.health;
+            monsterToAttack = monster;
+        }
+    }
+    return monsterToAttack;
 }
 
 function update(){
     counter++;
     game.physics.arcade.overlap(bullets, monsters, bulletHit, null, this);
 
-    // spawn monsters
-    if (running ){
-        if ( counter  >= 180){
-            counter = 0;
-            // should be 3* a second
-            // Release a enemy
-            if (Math.floor(Math.random()*10) % 2 === 0){
-                // up down
-                monster = monsters.create(9 * blockSize,  blockSize , 'monster01');
-                monster.dir = "ud";
-            }
-            else{
-                //left right
-                monster = monsters.create(blockSize, 7 * blockSize , 'monster01');
-                monster.dir = "lr";
-            }
-            monster.scale.setTo(blockSize/50,blockSize/50);
-            monster.speed = 100;
-            monster.body.velocity.x = 0;
-            monster.body.velocity.y = 0;
-            monster.anchor.setTo(0.5, 0.5);
-            monster.animations.add('move', [0,1,2,3], 5, true);
-            monster.animations.play('move');
-            monster.startHealth = 200;
-            monster.health = monster.startHealth;
-            monster.goTo = convertReal2Matrix([monster.body.position.x,monster.body.position.y]);
-            monster.alive = true;
-            monster.price = 5;
-            monster.needsUpdate = true;
-            monster.path = [monster.goTo];
-            monster.newPathFound = false;
-            monster.pathPos = 1;
-            color = Math.floor(Math.random() * 0xffffff);
-            monster.tint = color;
-
-            //monsterArray.push(monster);
+    // timer bar
+    if (running  ){
+        //console.log(timer-counter);
+        time = timer-counter;
+        if (time <=0){
+            time = 0;
         }
+        if (bar){
+            bar.destroy();
+        }
+        var timerBar = game.add.graphics(0, 0);
+        timerBar.lineStyle(0);
+        timerBar.beginFill((255-(time/2))*256*256, 0.5);
+        bar = timerBar.drawRect(800, 25, time/3, 20);
+    }
+
+    // spawn monsters
+    if (running && counter >= timer){
+        counter = 0;
+
+        if (currentMonster === 0){
+            // timer in wave
+            timer = waves[currentWave].betweenMonstersTime;
+        }
+
+        // Release a enemy
+        if (Math.floor(Math.random()*10) % 2 === 0){
+            // up down
+            monster = monsters.create(9 * blockSize,  blockSize , monsterTypes[waves[currentWave].order[currentMonster]].image);
+            monster.dir = "ud";
+        }
+        else{
+            //left right
+            monster = monsters.create(blockSize, 7 * blockSize , monsterTypes[waves[currentWave].order[currentMonster]].image);
+            monster.dir = "lr";
+        }
+        monster.scale.setTo(blockSize/50,blockSize/50);
+        monster.speed = monsterTypes[waves[currentWave].order[currentMonster]].speed;
+        monster.body.velocity.x = 0;
+        monster.body.velocity.y = 0;
+        monster.anchor.setTo(0.5, 0.5);
+        monster.animations.add('move', [0,1,2,3], 5, true);
+        monster.animations.play('move');
+        monster.startHealth = monsterTypes[waves[currentWave].order[currentMonster]].life;
+        monster.health = monster.startHealth;
+        monster.goTo = convertReal2Matrix([monster.body.position.x,monster.body.position.y]);
+        monster.alive = true;
+        monster.price = monsterTypes[waves[currentWave].order[currentMonster]].price;
+        monster.needsUpdate = true;
+        monster.path = [monster.goTo];
+        monster.newPathFound = false;
+        monster.pathPos = 1;
+        //color = Math.floor(Math.random() * 0xffffff);
+        monster.tint = monsterTypes[waves[currentWave].order[currentMonster]].color;
+
+        //monsterArray.push(monster);
+
+
+        currentMonster ++;
+
+        if (currentMonster >= waves[currentWave].order.length){
+            // new wave
+
+            currentWave ++;
+            currentMonster = 0;
+            console.log("Current wave: " + currentWave +" Current monster: " + currentMonster);
+            timer  = waves[currentWave].betweenWavesTime;
+        }
+        if (currentWave >= waves.length){
+            console.log("you won");
+        }
+        // should be 3* a second
     }
 
     // check up on guns
     guns.forEach(function(gun){
         gun.counter++;
         closest = gun.range + 1;
-        closestMonster = null;
+        if (gun.type === 1){
+            monsterToAttack = attackClosestMonster(gun);
+        }
+        else if (gun.type === 2){
+            monsterToAttack = attackWeakestMonster(gun);
+        }
+        else{
+            monsterToAttack = null;
+        }
+
+        /*
         monsters.forEach(function(monster){
             delta = game.physics.arcade.distanceBetween(gun,monster);
             if ( delta < gun.range && delta < closest){
                 closest = delta;
-                closestMonster = monster;
+                monsterToAttack = monster;
             }
-        });
-        if (closestMonster){
-            gun.body.rotation = game.physics.arcade.angleBetween(monster,gun)* 180 / Math.PI + 180+90;
+        });*/
+
+        if (monsterToAttack){
+            gun.body.rotation = game.physics.arcade.angleBetween(monsterToAttack,gun)* 180 / Math.PI + 180+90;
             if (gun.counter >= gun.speed )
             {
                 gun.counter = 0;
@@ -650,8 +782,8 @@ function update(){
                 // gun.type 51 ==> turret 2 upgrade 1 so 1*5*5= 25
                 bullet.damage = (gun.type%10)*5*(1+Math.floor(gun.type/10));
                 bullet.alive = true;
-                bullet.lifespan = 500;
-                bullet.body.velocity = game.physics.arcade.velocityFromRotation(game.physics.arcade.angleBetween(monster,gun)+Math.PI, 400 - gun.type*100);
+                bullet.lifespan = gun.type * 500;
+                bullet.body.velocity = game.physics.arcade.velocityFromRotation(game.physics.arcade.angleBetween(monsterToAttack,gun)+Math.PI, 400 - gun.type*100);
 
                 pop.play();
             }
@@ -689,12 +821,12 @@ function update(){
                         monster.pathPos = monster.path.length - 1;
                     }
                     //monster.newPathFound = false;
-                    console.log(monster.pathPos+":"+monster.path[monster.pathPos]+" goto: "+monster.goTo[0]+","+monster.goTo[1]+" field: "+ goToRealX+","+goToRealY);
+                    //console.log(monster.pathPos+":"+monster.path[monster.pathPos]+" goto: "+monster.goTo[0]+","+monster.goTo[1]+" field: "+ goToRealX+","+goToRealY);
                     monster.goTo[0] = monster.path[monster.pathPos][0];
                     monster.goTo[1] = monster.path[monster.pathPos][1];
                     goToRealX = convertMatrix2Real(monster.goTo)[0];
                     goToRealY = convertMatrix2Real(monster.goTo)[1];
-                    console.log(monster.pathPos+":"+monster.path[monster.pathPos]+" goto: "+monster.goTo[0]+","+monster.goTo[1]+" field: "+ goToRealX+","+goToRealY);
+                    //console.log(monster.pathPos+":"+monster.path[monster.pathPos]+" goto: "+monster.goTo[0]+","+monster.goTo[1]+" field: "+ goToRealX+","+goToRealY);
 
                 }
             }
@@ -805,13 +937,15 @@ function update(){
     });*/
 
     // check up on bullets
-    bullets.forEachExists(function (bullet){
+    for (i=0;i<bullets.length;i++){
+        bullet = bullets.getAt(i);
+        //bullets.forEachExists(function (bullet){
         if ((bullet.body.position.x > 15 * blockSize || bullet.body.position.x < 2 * blockSize || bullet.body.position.y > 13 * blockSize||bullet.body.position.y < 2 * blockSize) ){
-            bullet.exists = false;
-            //bullet.destroy();
+            //bullet.exists = false;
+            bullet.destroy();
             //bullet.remove();
         }
-    });
+    }
 
     // fade blocked away
     if (blocked.alpha > 0.04){
