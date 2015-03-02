@@ -10,8 +10,6 @@ TODO:
 
 - add more monsters
 
-- add live bar
-
 - add kill animation
 - add half size to level
 - update sound
@@ -59,7 +57,7 @@ var timer = 180;
 var counter = 1000;
 var towerRange;
 var bar;
-
+var timerBar;
 
 // watch out it is mirrored!
 // 15x13
@@ -132,6 +130,7 @@ var checkTowerPos = {
     checkUD : false,
     checkLR : false,
 };
+
 
 function preload(){
     game.load.image      ('field'    , 'assets/field.png'            );
@@ -637,6 +636,8 @@ function resetGame(){
         towerRange.destroy();
     }
     //monsterArray = [];
+    currentWave = 0;
+    currentMonster = 0;
 }
 
 function attackClosestMonster(gun){
@@ -671,20 +672,24 @@ function attackWeakestMonster(gun){
 function update(){
     counter++;
     game.physics.arcade.overlap(bullets, monsters, bulletHit, null, this);
-
+    time = timer-counter;
     // timer bar
-    if (running  ){
+    if (running  && (time % 5 ===0  )){
         //console.log(timer-counter);
-        time = timer-counter;
+        //time = timer-counter;
         if (time <=0){
             time = 0;
         }
         if (bar){
-            bar.destroy();
+            //bar.destroy();
+            //timerBar.clear();
+            bar.clear();
         }
-        var timerBar = game.add.graphics(0, 0);
+        //console.log(time);
+        timerBar = game.add.graphics(0, 0);
         timerBar.lineStyle(0);
-        timerBar.beginFill((255-(time/2))*256*256, 0.5);
+        timerBar.beginFill((255 - Math.floor(time/2)) << 16, 1);
+        //timerBar.beginFill(0xFF0000, 1);
         bar = timerBar.drawRect(800, 25, time/3, 20);
     }
 
