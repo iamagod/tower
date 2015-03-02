@@ -7,7 +7,6 @@ game field is 100,100 x 750x650
 TODO:
 - add multiple towers
 - add upgrades
-
 - add more monsters
 
 - add kill animation
@@ -96,13 +95,15 @@ var fieldArray = [
 
 var waves = [
     {order :[2,2,2,2,2],                                     betweenMonstersTime :180 ,betweenWavesTime: 500},
+    {order :[3,3,3,3,3],                                     betweenMonstersTime :180 ,betweenWavesTime: 500},
     {order :[1,1,1,1,1],                                     betweenMonstersTime :180 ,betweenWavesTime: 500},
     {order :[1,2,1,2,1],                                     betweenMonstersTime :180 ,betweenWavesTime: 500},
     {order :[1,1,1,2,2,2],                                   betweenMonstersTime :180 ,betweenWavesTime: 500},
-    {order :[1,1,1,2,2,2,1,2],                               betweenMonstersTime :180 ,betweenWavesTime: 500},
-    {order :[1,1,1,2,2,2,1,2,1,2,1,2],                       betweenMonstersTime :180 ,betweenWavesTime: 500},
-    {order :[1,1,1,2,2,2,1,1,1,1,1,1,1,1],                   betweenMonstersTime :180 ,betweenWavesTime: 500},
-    {order :[1,1,1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2], betweenMonstersTime :180 ,betweenWavesTime: 500},
+    {order :[3,3,3,2,2,2],                                   betweenMonstersTime :180 ,betweenWavesTime: 500},
+    {order :[1,3,1,2,2,2,1,2],                               betweenMonstersTime :180 ,betweenWavesTime: 500},
+    {order :[1,3,1,2,2,2,1,2,1,2,1,2],                       betweenMonstersTime :180 ,betweenWavesTime: 500},
+    {order :[1,3,1,2,2,2,1,1,3,3,1,1,1,1],                   betweenMonstersTime :180 ,betweenWavesTime: 500},
+    {order :[1,3,1,2,2,2,3,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2], betweenMonstersTime :180 ,betweenWavesTime: 500},
     ];
 
 var monsterTypes = [];
@@ -122,6 +123,13 @@ monsterTypes[2] = {
     color : 0x00ff00,
 };
 
+monsterTypes[3] = {
+    life : 150,
+    speed : 75,
+    image : "monster03",
+    price : 4,
+    color : 0x0000ff,
+};
 var checkTowerPos = {
     pos : [0,0],
     UDOK : false,
@@ -138,6 +146,7 @@ function preload(){
     game.load.spritesheet('bullets'  , 'assets/bullets.png' ,10,10,5 );
     game.load.spritesheet('monster01', 'assets/baddie01.png',50,50,4 );
     game.load.spritesheet('monster02', 'assets/baddie02.png',50,50,4 );
+    game.load.spritesheet('monster03', 'assets/baddie03.png',50,50,4 );
     game.load.spritesheet('numbers'  , 'assets/numbers.png' ,40,50,10);
     game.load.image      ('reset'    , 'assets/reset.png'            );
     game.load.image      ('gameover' , 'assets/game over.png'        );
