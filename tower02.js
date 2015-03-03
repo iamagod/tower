@@ -9,6 +9,8 @@ TODO:
 - add upgrades
 - add more monsters
 
+- add drag to mouse
+
 - add kill animation
 - add half size to level
 - update sound
@@ -57,6 +59,7 @@ var counter = 1000;
 var towerRange;
 var bar;
 var timerBar;
+var emitter;
 
 // watch out it is mirrored!
 // 15x13
@@ -96,6 +99,7 @@ var fieldArray = [
 var waves = [
     {order :[2,2,2,2,2],                                     betweenMonstersTime :180 ,betweenWavesTime: 500},
     {order :[3,3,3,3,3],                                     betweenMonstersTime :180 ,betweenWavesTime: 500},
+    {order :[4,4,4,4,4],                                     betweenMonstersTime :180 ,betweenWavesTime: 500},
     {order :[1,1,1,1,1],                                     betweenMonstersTime :180 ,betweenWavesTime: 500},
     {order :[1,2,1,2,1],                                     betweenMonstersTime :180 ,betweenWavesTime: 500},
     {order :[1,1,1,2,2,2],                                   betweenMonstersTime :180 ,betweenWavesTime: 500},
@@ -130,6 +134,15 @@ monsterTypes[3] = {
     price : 4,
     color : 0x0000ff,
 };
+
+monsterTypes[4] = {
+    life : 25,
+    speed : 200,
+    image : "monster04",
+    price : 5,
+    color : 0xff00ff,
+};
+
 var checkTowerPos = {
     pos : [0,0],
     UDOK : false,
@@ -139,7 +152,6 @@ var checkTowerPos = {
     checkLR : false,
 };
 
-
 function preload(){
     game.load.image      ('field'    , 'assets/field.png'            );
     game.load.spritesheet('guns'     , 'assets/guns.png'    ,50,50,6 );
@@ -147,6 +159,8 @@ function preload(){
     game.load.spritesheet('monster01', 'assets/baddie01.png',50,50,4 );
     game.load.spritesheet('monster02', 'assets/baddie02.png',50,50,4 );
     game.load.spritesheet('monster03', 'assets/baddie03.png',50,50,4 );
+    game.load.spritesheet('monster04', 'assets/baddie04.png',50,50,4 );
+    game.load.spritesheet('particle' , 'assets/particle.png',50,50,4 );
     game.load.spritesheet('numbers'  , 'assets/numbers.png' ,40,50,10);
     game.load.image      ('reset'    , 'assets/reset.png'            );
     game.load.image      ('gameover' , 'assets/game over.png'        );
@@ -244,6 +258,14 @@ function create(){
     bullets.enableBody = true;
     game.input.onDown.add(click, self);
 
+    emitter = game.add.emitter(100, 100, 15000);
+
+    emitter.makeParticles('particle');
+    emitter.minParticleSpeed.setTo(-800, -800);
+    emitter.maxParticleSpeed.setTo(800, 800);
+    emitter.gravity = 0;
+    emitter.minParticleScale = 0.5;
+    emitter.maxParticleScale = 0.5;
 
 }
 
@@ -542,6 +564,8 @@ function bulletHit(bullet,monster){
     monster.health -= bullet.damage;
     if (monster.health <= 0)
     {
+        posX = monster.body.position.x;
+        posY = monster.body.position.y;
         monster.destroy();
         kill++;
         changeKill();
@@ -549,6 +573,14 @@ function bulletHit(bullet,monster){
         changeMoney();
 
         splash.play();
+
+        emitter.x = posX;
+        emitter.y = posY;
+        emitter.forEach(function(particle) {
+            particle.tint = monster.tint;
+        });
+        emitter.start(true,250,null,5);
+
     }
     else{
         scale = monster.health / monster.startHealth;
