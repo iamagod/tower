@@ -7,15 +7,14 @@ game field is 100,100 x 750x650
 TODO:
 - add multiple towers
 - add upgrades
-- add more monsters
 
 - add drag to mouse
+- add life bar to monsters
 
-- add kill animation
 - add half size to level
 - update sound
-- fix blocksizes bug
 - make counter bar nicer
+- add more monster versions
 */
 
 var blockSize = 50;
@@ -43,6 +42,7 @@ var money = 100;
 var life = 20;
 var kill = 0;
 var towerPrice =[];
+var toBeRemoved = [];
 var bg;
 var blocked;
 
@@ -113,7 +113,7 @@ var waves = [
 var monsterTypes = [];
 monsterTypes[1] = {
     life : 200,
-    speed : 100,
+    speed : 4 * blockSize,
     image : "monster01",
     price : 5,
     color : 0xff0000,
@@ -121,7 +121,7 @@ monsterTypes[1] = {
 
 monsterTypes[2] = {
     life : 100,
-    speed : 50,
+    speed : 2 * blockSize,
     image : "monster02",
     price : 2,
     color : 0x00ff00,
@@ -129,7 +129,7 @@ monsterTypes[2] = {
 
 monsterTypes[3] = {
     life : 150,
-    speed : 75,
+    speed : 3 * blockSize,
     image : "monster03",
     price : 4,
     color : 0x0000ff,
@@ -137,7 +137,7 @@ monsterTypes[3] = {
 
 monsterTypes[4] = {
     life : 25,
-    speed : 200,
+    speed : 6 * blockSize,
     image : "monster04",
     price : 5,
     color : 0xff00ff,
@@ -261,8 +261,8 @@ function create(){
     emitter = game.add.emitter(100, 100, 15000);
 
     emitter.makeParticles('particle');
-    emitter.minParticleSpeed.setTo(-800, -800);
-    emitter.maxParticleSpeed.setTo(800, 800);
+    emitter.minParticleSpeed.setTo(-16 * blockSize, -16 * blockSize);
+    emitter.maxParticleSpeed.setTo(16 * blockSize, 16 * blockSize);
     emitter.gravity = 0;
     emitter.minParticleScale = 0.5;
     emitter.maxParticleScale = 0.5;
@@ -589,6 +589,7 @@ function bulletHit(bullet,monster){
     }
 
     bullet.exists = false;
+    //bullet.destroy();
 }
 
 function calculateNewPath(monster){
@@ -731,7 +732,7 @@ function update(){
         timerBar.lineStyle(0);
         timerBar.beginFill((255 - Math.floor(time/2)) << 16, 1);
         //timerBar.beginFill(0xFF0000, 1);
-        bar = timerBar.drawRect(800, 25, time/3, 20);
+        bar = timerBar.drawRect(16 * blockSize, Math.floor(blockSize / 2), time/3, 20);
     }
 
     // spawn monsters
@@ -826,11 +827,11 @@ function update(){
                 // gun.type 12 ==> turret 2 upgrade 1 so 2*5*2= 20
                 // gun.type 01 ==> turret 2 upgrade 1 so 1*5*1= 5
                 // gun.type 51 ==> turret 2 upgrade 1 so 1*5*5= 25
-                bullet.damage = (gun.type%10)*5*(1+Math.floor(gun.type/10));
+                bullet.damage = (gun.type % 10) * 5 * (1 + Math.floor(gun.type / 10));
                 bullet.alive = true;
                 bullet.lifespan = gun.type * 500;
-                bullet.body.velocity = game.physics.arcade.velocityFromRotation(game.physics.arcade.angleBetween(monsterToAttack,gun)+Math.PI, 400 - gun.type*100);
-
+                bullet.body.velocity = game.physics.arcade.velocityFromRotation(game.physics.arcade.angleBetween(monsterToAttack,gun)+Math.PI,
+                                                                                8 * blockSize - gun.type * 2 * blockSize);
                 pop.play();
             }
         }
@@ -986,11 +987,17 @@ function update(){
     for (i=0;i<bullets.length;i++){
         bullet = bullets.getAt(i);
         //bullets.forEachExists(function (bullet){
-        if ((bullet.body.position.x > 15 * blockSize || bullet.body.position.x < 2 * blockSize || bullet.body.position.y > 13 * blockSize||bullet.body.position.y < 2 * blockSize) ){
+        if (!bullet.exists || (bullet.body.position.x > 15 * blockSize || bullet.body.position.x < 2 * blockSize ||
+             bullet.body.position.y > 13 * blockSize||bullet.body.position.y < 2 * blockSize) ){
             //bullet.exists = false;
-            bullet.destroy();
+            //bullet.destroy();
             //bullet.remove();
+            toBeRemoved.push(bullet);
         }
+    }
+    // clean up bullets.
+    for (i=0; i<toBeRemoved.length; i++){
+        toBeRemoved[i].destroy();
     }
 
     // fade blocked away
