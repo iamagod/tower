@@ -7,6 +7,7 @@ game field is 100,100 x 750x650
 TODO:
 - add life bar to monsters
 
+- invisible monsters?
 - add no money indicator
 - add half size to level
 - add small wall piece
@@ -146,19 +147,25 @@ var gunTypes = [];
 
 gunTypes[0] = {
     price : 5,
-    speed : 2 * blockSize,
+    speed : 50,
     range : 2 * blockSize,
     matrixNumber :1,
     image : 0,
     attackType : "closest",
+    damage : 10,
+    bulletLife : 500,
+    bulletSpeed : 4 * blockSize,
 };
 gunTypes[1] = {
     price : 10,
-    speed : 4 * blockSize,
+    speed : 200,
     range : 4 * blockSize,
     matrixNumber :2,
     image : 1,
     attackType : "weakest",
+    damage : 25,
+    bulletLife : 500,
+    bulletSpeed : 100,
 };
 gunTypes[2] = {
     price : 10,
@@ -167,6 +174,9 @@ gunTypes[2] = {
     matrixNumber :3,
     image : 2,
     attackType : "weakest",
+    damage : 50,
+    bulletLife : 750,
+    bulletSpeed : 2 * blockSize
 };
 gunTypes[3] = {
     price : 10,
@@ -175,6 +185,9 @@ gunTypes[3] = {
     matrixNumber :4,
     image : 3,
     attackType : "weakest",
+    damage : 25,
+    bulletLife : 500,
+    bulletSpeed : 2 * blockSize
 };
 gunTypes[4] = {
     price : 10,
@@ -183,6 +196,9 @@ gunTypes[4] = {
     matrixNumber :5,
     image : 4,
     attackType : "weakest",
+    damage : 25,
+    bulletLife : 500,
+    bulletSpeed : 4 * blockSize
 };
 gunTypes[5] = {
     price : 10,
@@ -191,6 +207,9 @@ gunTypes[5] = {
     matrixNumber :6,
     image : 5,
     attackType : "weakest",
+    damage : 25,
+    bulletLife : 500,
+    bulletSpeed : 2 * blockSize
 };
 gunTypes[6] = {
     price : 10,
@@ -199,6 +218,9 @@ gunTypes[6] = {
     matrixNumber :7,
     image : 6,
     attackType : "weakest",
+    damage : 25,
+    bulletLife : 500,
+    bulletSpeed : 2 * blockSize
 };
 gunTypes[7] = {
     price : 10,
@@ -207,6 +229,9 @@ gunTypes[7] = {
     matrixNumber :8,
     image : 7,
     attackType : "weakest",
+    damage : 25,
+    bulletLife : 500,
+    bulletSpeed : 2 * blockSize
 };
 
 // populate gunTypes Array.
@@ -214,14 +239,18 @@ for (i=1;i<=5;i++){
     for (j=0;j<8;j++){
         gunTypes[i * 10 + j] = {};
         gunTypes[i * 10 + j].price = gunTypes[j].price + i * 5;
-        gunTypes[i * 10 + j].speed = gunTypes[j].speed + i * blockSize;
+        gunTypes[i * 10 + j].speed = gunTypes[j].speed - i * Math.floor(blockSize/50);
         gunTypes[i * 10 + j].range = gunTypes[j].range + i * 25;
         gunTypes[i * 10 + j].matrixNumber = i*10+j +1;
         gunTypes[i * 10 + j].image = j;
         gunTypes[i * 10 + j].attackType = "weakest";
+        gunTypes[i * 10 + j].damage = gunTypes[j].damage + i *10;
+        gunTypes[i * 10 + j].bulletLife = gunTypes[j].bulletLife + i*250;
+        gunTypes[i * 10 + j].bulletSpeed = gunTypes[j].bulletSpeed + i*0.5*blockSize;
 
     }
 }
+
 var checkTowerPos = {
     pos : [0,0],
     UDOK : false,
@@ -463,8 +492,11 @@ function createTower(realPos, matrixPos, type){
     gun.type = type;
     gun.range = gunTypes[type].range;
     gun.speed = gunTypes[type].speed;
+    gun.damage = gunTypes[type].damage;
     gun.counter = 0;
     gun.matrixPos = [matrixPos[0],matrixPos[1]];
+    gun.bulletSpeed = gunTypes[type].bulletSpeed;
+    gun.bulletLife = gunTypes[type].bulletLife;
 
     gunArray.push(gun);
 
@@ -731,7 +763,6 @@ function click(event){
 }
 
 function bulletHit(bullet,monster){
-    //console.log(monster.health+" "+bullet.damage)
 
     monster.health -= bullet.damage;
     if (monster.health <= 0)
@@ -999,10 +1030,10 @@ function update(){
                 // gun.type 12 ==> turret 2 upgrade 1 so 2*5*2= 20
                 // gun.type 01 ==> turret 2 upgrade 1 so 1*5*1= 5
                 // gun.type 51 ==> turret 2 upgrade 1 so 1*5*5= 25
-                bullet.damage = ((gun.type + 1) % 10) * 5 * (1 + Math.floor(gun.type / 10));
+                bullet.damage = gun.damage;
                 bullet.alive = true;
-                bullet.lifespan = (gun.type + 1) * 500;
-                bullet.body.velocity = game.physics.arcade.velocityFromRotation(game.physics.arcade.angleBetween(monsterToAttack,gun)+Math.PI, gun.speed);
+                bullet.lifespan = gun.bulletLife;
+                bullet.body.velocity = game.physics.arcade.velocityFromRotation(game.physics.arcade.angleBetween(monsterToAttack,gun)+Math.PI, gun.bulletSpeed);
                 pop.play();
             }
         }
