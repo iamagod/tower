@@ -8,13 +8,13 @@ TODO:
 - add multiple towers
 - add upgrades
 
-- add drag to mouse
 - add life bar to monsters
 
 - add half size to level
 - update sound
 - make counter bar nicer
 - add more monster versions
+- fix build in front of gate bug
 */
 
 var blockSize = 50;
@@ -27,10 +27,9 @@ var heigth = 14 * blockSize; //700
 var game = new Phaser.Game(width, heigth, Phaser.AUTO, '', { preload: preload, create: create, update: update });
 
 var towerBase;
-var gun01;
-var gun02;
+var gun = [];
 var numbers;
-var selectedTower = 0;
+var selectedTower;
 var selected;
 var selectedInField;
 var running = false;
@@ -143,6 +142,72 @@ monsterTypes[4] = {
     color : 0xff00ff,
 };
 
+var gunTypes = [];
+gunTypes[0] = {
+    price : 5,
+    speed : 2 * blockSize,
+    range : 2 * blockSize,
+    matrixNumber :1,
+    image : 0,
+    attackType : "closest",
+};
+gunTypes[1] = {
+    price : 10,
+    speed : 4 * blockSize,
+    range : 4 * blockSize,
+    matrixNumber :2,
+    image : 1,
+    attackType : "weakest",
+};
+gunTypes[2] = {
+    price : 10,
+    speed : 4 * blockSize,
+    range : 4 * blockSize,
+    matrixNumber :3,
+    image : 2,
+    attackType : "weakest",
+};
+gunTypes[3] = {
+    price : 10,
+    speed : 4 * blockSize,
+    range : 4 * blockSize,
+    matrixNumber :4,
+    image : 3,
+    attackType : "weakest",
+};
+gunTypes[4] = {
+    price : 10,
+    speed : 4 * blockSize,
+    range : 4 * blockSize,
+    matrixNumber :5,
+    image : 4,
+    attackType : "weakest",
+};
+gunTypes[5] = {
+    price : 10,
+    speed : 4 * blockSize,
+    range : 4 * blockSize,
+    matrixNumber :6,
+    image : 5,
+    attackType : "weakest",
+};
+gunTypes[6] = {
+    price : 10,
+    speed : 4 * blockSize,
+    range : 4 * blockSize,
+    matrixNumber :7,
+    image : 6,
+    attackType : "weakest",
+};
+gunTypes[7] = {
+    price : 10,
+    speed : 4 * blockSize,
+    range : 4 * blockSize,
+    matrixNumber :8,
+    image : 7,
+    attackType : "weakest",
+};
+
 var checkTowerPos = {
     pos : [0,0],
     UDOK : false,
@@ -154,7 +219,7 @@ var checkTowerPos = {
 
 function preload(){
     game.load.image      ('field'    , 'assets/field.png'            );
-    game.load.spritesheet('guns'     , 'assets/guns.png'    ,50,50,6 );
+    game.load.spritesheet('guns'     , 'assets/guns.png'    ,50,50,20 );
     game.load.spritesheet('bullets'  , 'assets/bullets.png' ,10,10,5 );
     game.load.spritesheet('monster01', 'assets/baddie01.png',50,50,4 );
     game.load.spritesheet('monster02', 'assets/baddie02.png',50,50,4 );
@@ -196,8 +261,6 @@ function create(){
     pathfinderUD = game.plugins.add(Phaser.Plugin.PathFinderPlugin);
     pathfinderLR = game.plugins.add(Phaser.Plugin.PathFinderPlugin);
 
-
-
     numbers = game.add.group();
     lifeDigit100 = numbers.create(3 * blockSize + 0 * 0.7 * blockSize, 5, 'numbers',0); //150
     lifeDigit10 = numbers.create(3 * blockSize + 1 * 0.7 * blockSize, 5, 'numbers',0); //185
@@ -227,25 +290,25 @@ function create(){
 
     items = game.add.group();
 
-    towerBase = items.create(16 * blockSize,2 * blockSize, 'guns',2);
-    towerBase.scale.setTo(blockSize/50,blockSize/50);
-    gun01 = items.create(16 * blockSize,2 * blockSize, 'guns',0);
-    gun01.scale.setTo(blockSize/50,blockSize/50);
-    gun01.inputEnabled = true;
-    gun01.events.onInputDown.add(selectTower);
-    towerPrice[1] = 5;
+    for (i=0; i<8;i++){
+        towerBase = items.create((16 + i % 4) * blockSize,(2 + 2*Math.floor(i/4)) * blockSize, 'guns',8);
+        towerBase.scale.setTo(blockSize/50,blockSize/50);
+        gun[i] = items.create((16 + i % 4) * blockSize,(2 + 2*Math.floor(i/4)) * blockSize, 'guns',i);
+        gun[i].scale.setTo(blockSize/50,blockSize/50);
+        gun[i].inputEnabled = true;
+        gun[i].events.onInputDown.add(selectTower);
 
-    towerBase = items.create(17 * blockSize,2 * blockSize, 'guns',2);
-    towerBase.scale.setTo(blockSize/50,blockSize/50);
-    gun02 = items.create(17 * blockSize,2 * blockSize, 'guns',1);
-    gun02.scale.setTo(blockSize/50,blockSize/50);
-    gun02.inputEnabled = true;
-    gun02.events.onInputDown.add(selectTower);
-    towerPrice[2] = 10;
+        gunPrice10 = numbers.create((16 + i % 4) * blockSize,(3 + 2*Math.floor(i/4)) * blockSize, 'numbers', Math.floor(gunTypes[i].price / 10));
+        gunPrice1 = numbers.create((16 + i % 4) * blockSize + 1 * 0.35 * blockSize,(3 + 2*Math.floor(i/4)) * blockSize, 'numbers', gunTypes[i].price % 10);
+        gunPrice10.scale.setTo(blockSize/100,blockSize/100);
+        gunPrice1.scale.setTo(blockSize/100,blockSize/100);
 
-    towerBase = items.create(16 * blockSize,6 * blockSize, 'guns',2);
+    }
+
+
+    towerBase = items.create(16 * blockSize,6 * blockSize, 'guns',8);
     towerBase.scale.setTo(blockSize/50,blockSize/50);
-    removeTower = items.create(16 * blockSize,6 * blockSize, 'guns',5);
+    removeTower = items.create(16 * blockSize,6 * blockSize, 'guns',19);
     removeTower.scale.setTo(blockSize/50,blockSize/50);
     removeTower.inputEnabled = true;
     removeTower.events.onInputDown.add(selectTower);
@@ -337,47 +400,42 @@ function swapGrid(grid){
 
 function selectTower(event){
     //console.log("placed Tower "+event.x+" "+event.y);
-    if (event.x >= gun01.position.x && event.x <= gun01.position.x && event.y >= gun01.position.y && event.y <= gun01.position.y){
-        if (selectedTower === 1){
-            selectedTower = 0;
-            selected.destroy();
-        }
-        else{
-            selectedTower = 1;
-            if (selected){selected.destroy();}
-            selected = items.create(16 * blockSize,2 * blockSize, 'guns',3);
-            selected.scale.setTo(blockSize/50,blockSize/50);
-        }
-    }
-    else if (event.x >= gun02.position.x && event.x <= gun02.position.x && event.y >= gun02.position.y && event.y <= gun02.position.y){
-        if (selectedTower === 2){
-            selectedTower = 0;
-            selected.destroy();
-        }
-        else{
-            selectedTower = 2;
-            if (selected){selected.destroy();}
-            selected = items.create(17 * blockSize,2 * blockSize, 'guns',3);
-            selected.scale.setTo(blockSize/50,blockSize/50);
+    for (i=0; i<8;i++){
+        if (event.x >= gun[i].position.x && event.x <= gun[i].position.x &&
+            event.y >= gun[i].position.y && event.y <= gun[i].position.y){
+            if (selectedTower === i ){
+                selectedTower = 0;
+                if (selected){selected.destroy();}
+            }
+            else{
+                selectedTower = i;
+                if (selected){selected.destroy();}
+                selected = items.create((16 + i % 4) * blockSize,(2 + 2 * Math.floor(i/4)) * blockSize, 'guns',17);
+                selected.scale.setTo(blockSize/50,blockSize/50);
+            }
         }
     }
-    else if (event.x >= removeTower.position.x && event.x <= removeTower.position.x && event.y >= removeTower.position.y && event.y <= removeTower.position.y)
-        if (selectedTower === 9){
+
+    //remove tower
+    if (event.x >= removeTower.position.x && event.x <= removeTower.position.x &&
+        event.y >= removeTower.position.y && event.y <= removeTower.position.y)
+        if (selectedTower === 9 ){
             selectedTower = 0;
-            selected.destroy();
+            if (selected){selected.destroy();}
         }
         else{
             selectedTower = 9;
             if (selected){selected.destroy();}
-            selected = items.create(16 * blockSize,6 * blockSize, 'guns');
+            selected = items.create(16 * blockSize,6 * blockSize, 'guns',17);
             selected.scale.setTo(blockSize/50,blockSize/50);
-            selected.frame = 3;
+
         }
     console.log("Selected tower is: "+selectedTower);
 }
 
 function placeTower(){
-    money -= towerPrice[checkTowerPos.towerType];
+    type = checkTowerPos.towerType;
+    money -= gunTypes[type].price;
     changeMoney();
     if (selectedInField){
         selectedInField.destroy();
@@ -385,20 +443,20 @@ function placeTower(){
 
     realPos = convertMatrix2Real(checkTowerPos.pos);
 
-    towerBase = guns.create(realPos[0],realPos[1], 'guns', 2);
+    towerBase = guns.create(realPos[0],realPos[1], 'guns', 8);
     towerBase.scale.setTo(blockSize/50,blockSize/50);
     towerBase.matrixPos = [checkTowerPos.pos[0],checkTowerPos.pos[1]];
 
     towerBaseArray.push(towerBase);
 
-    var gun = guns.create(realPos[0] + 25 * blockSize/50, realPos[1] + 25 * blockSize/50, 'guns',checkTowerPos.towerType - 1);
+    var gun = guns.create(realPos[0] + 25 * blockSize/50, realPos[1] + 25 * blockSize/50, 'guns',type);
     gun.scale.setTo(blockSize/50,blockSize/50);
     //gun.anchor.setTo(1 - (0.5 * blockSize/50), 1 - (0.5 * blockSize/50));
     gun.anchor.setTo(0.5,0.5);
 
-    gun.type = checkTowerPos.towerType;
-    gun.range = checkTowerPos.towerType * 25 + 50;
-    gun.speed = checkTowerPos.towerType * 50;
+    gun.type = type;
+    gun.range = gunTypes[type].range;
+    gun.speed = gunTypes[type].speed;
     gun.counter = 0;
     gun.matrixPos = [checkTowerPos.pos[0],checkTowerPos.pos[1]];
 
@@ -406,9 +464,8 @@ function placeTower(){
 
     build.play();
 
-    //game.world.bringToTop(gun);
-
-    fieldArray[checkTowerPos.pos[0]][checkTowerPos.pos[1]] = checkTowerPos.towerType;
+    // So in matrix number is one higher.
+    fieldArray[checkTowerPos.pos[0]][checkTowerPos.pos[1]] = gunTypes[type].matrixNumber;
     monsters.forEachExists(function(monster){
         monster.needsUpdate = true;
     });
@@ -429,8 +486,8 @@ function click(event){
         if (pauseState === false && resetState === false){
             field = convertReal2Matrix([event.x,event.y]);
             // which tower?
-            if ((selectedTower === 1 || selectedTower === 2)){
-                if (fieldArray[field[0]][field[1]] === 0 && money >= towerPrice[selectedTower]){
+            if (selectedTower <= 7 ){
+                if (fieldArray[field[0]][field[1]] === 0 && money >= gunTypes[selectedTower].price){
                     temp = [];
                     for (x=0;x<fieldArray.length;x++){
                         temp.push(fieldArray[x].slice(0));
@@ -485,8 +542,8 @@ function click(event){
                 }
             }
             // remove tower
-            else if (selectedTower === 9 && fieldArray[field[0]][field[1]] !== 0){
-                money += Math.floor(towerPrice[fieldArray[field[0]][field[1]]]/2);
+            if (selectedTower === 9 && fieldArray[field[0]][field[1]] !== 0){
+                money += Math.floor(gunTypes[fieldArray[field[0]][field[1]]].price/2);
                 changeMoney();
                 fieldArray[field[0]][field[1]] = 0;
                 monsters.forEachExists(function(monster){
@@ -797,10 +854,10 @@ function update(){
     guns.forEach(function(gun){
         gun.counter++;
         closest = gun.range + 1;
-        if (gun.type === 1){
+        if (gun.type === 0){
             monsterToAttack = attackClosestMonster(gun);
         }
-        else if (gun.type === 2){
+        else if (gun.type >= 1){
             monsterToAttack = attackWeakestMonster(gun);
         }
         else{
@@ -822,16 +879,15 @@ function update(){
             {
                 gun.counter = 0;
                 gun.anchor.setTo(0.5, 0.5);
-                var bullet = bullets.create(gun.position.x - 5, gun.position.y - 5, 'bullets', gun.type - 1);
+                var bullet = bullets.create(gun.position.x - 5, gun.position.y - 5, 'bullets', 18);
                 bullet.scale.setTo(blockSize/50,blockSize/50);
                 // gun.type 12 ==> turret 2 upgrade 1 so 2*5*2= 20
                 // gun.type 01 ==> turret 2 upgrade 1 so 1*5*1= 5
                 // gun.type 51 ==> turret 2 upgrade 1 so 1*5*5= 25
-                bullet.damage = (gun.type % 10) * 5 * (1 + Math.floor(gun.type / 10));
+                bullet.damage = ((gun.type + 1) % 10) * 5 * (1 + Math.floor(gun.type / 10));
                 bullet.alive = true;
-                bullet.lifespan = gun.type * 500;
-                bullet.body.velocity = game.physics.arcade.velocityFromRotation(game.physics.arcade.angleBetween(monsterToAttack,gun)+Math.PI,
-                                                                                8 * blockSize - gun.type * 2 * blockSize);
+                bullet.lifespan = (gun.type + 1) * 500;
+                bullet.body.velocity = game.physics.arcade.velocityFromRotation(game.physics.arcade.angleBetween(monsterToAttack,gun)+Math.PI, gun.speed);
                 pop.play();
             }
         }
