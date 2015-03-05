@@ -5,8 +5,6 @@ Tower Defence.
 game field is 100,100 x 750x650
 
 TODO:
-- add life bar to monsters
-
 - invisible monsters?
 - add no money indicator
 - add half size to level
@@ -21,6 +19,7 @@ TODO:
 */
 
 var blockSize = 50;
+var halfBlockSize = Math.floor(blockSize/2);
 
 var matrixSizeX = 15;
 var matrixSizeY = 13;
@@ -100,7 +99,8 @@ var fieldArray = [
     [9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9]]; //14
 
 var waves = [
-    {order :[2,2,2,2,2],                                     betweenMonstersTime :180 ,betweenWavesTime: 500},
+    //max length of waves is 500
+    {order :[1,2,2,2,2],                                     betweenMonstersTime :180 ,betweenWavesTime: 500},
     {order :[3,3,3,3,3],                                     betweenMonstersTime :180 ,betweenWavesTime: 500},
     {order :[4,4,4,4,4],                                     betweenMonstersTime :180 ,betweenWavesTime: 500},
     {order :[1,1,1,1,1],                                     betweenMonstersTime :180 ,betweenWavesTime: 500},
@@ -116,14 +116,14 @@ var waves = [
 var monsterTypes = [];
 monsterTypes[1] = {
     life : 200,
-    speed : 4 * blockSize,
+    speed : 3 * blockSize,
     image : "monster01",
     price : 5,
     color : 0xff0000,
 };
 monsterTypes[2] = {
     life : 100,
-    speed : 2 * blockSize,
+    speed : 1.5 * blockSize,
     image : "monster02",
     price : 2,
     color : 0x00ff00,
@@ -272,8 +272,10 @@ function preload(){
     game.load.spritesheet('numbers'  , 'assets/numbers.png' ,40,50,10);
     game.load.image      ('reset'    , 'assets/reset.png'            );
     game.load.image      ('gameover' , 'assets/game over.png'        );
-    game.load.image      ('upgrade' , 'assets/upgrade.png'        );
+    game.load.image      ('upgrade' , 'assets/upgrade.png'           );
     game.load.image      ('blocked'  , 'assets/blocked.png'          );
+    game.load.image      ('lifeBar'  , 'assets/lifeBar.png'          );
+
     game.load.audio      ("pop"      , 'assets/pop.m4a'              );
     game.load.audio      ("splash"   , 'assets/splash.m4a'           );
     game.load.audio      ("build"    , 'assets/build.m4a'            );
@@ -373,6 +375,9 @@ function create(){
     emitter.gravity = 0;
     emitter.minParticleScale = 0.5;
     emitter.maxParticleScale = 0.5;
+
+    timeBar = game.add.sprite(16 * blockSize, halfBlockSize, 'lifeBar');
+    timeBar.scale.setTo(blockSize/50, blockSize/100);
 
 }
 
@@ -665,7 +670,7 @@ function click(event){
     // upgrade tower yes
     if (upgradeActive && event.x > 16 * blockSize && event.x < 18 * blockSize &&
                          event.y > 9 * blockSize && event.y < 10 * blockSize ){
-            if (money <= upgrade.price){
+            if (money < upgrade.price){
                 console.log("no Money");
             }
             else{
@@ -788,7 +793,8 @@ function bulletHit(bullet,monster){
     else{
         scale = monster.health / monster.startHealth;
         //monster.scale.setTo(scale, scale);
-        monster.alpha = scale;
+        //monster.alpha = scale;
+        monster.lifeBar.scale.setTo(scale * blockSize/200, blockSize/400);
     }
 
     bullet.exists = false;
@@ -914,6 +920,63 @@ function attackWeakestMonster(gun){
     return monsterToAttack;
 }
 
+function callbackFunction(variable,callback){
+    //console.log(variable);
+    callback();
+}
+
+/*
+dosomething("blaha", function(){
+        alert("Yay just like jQuery callbacks!");
+    });
+
+
+    function dosomething(damsg, callback){
+        alert(damsg);
+        if(typeof callback == "function")
+        callback();
+    }*/
+
+function releaseMonster(){
+
+    if (Math.floor(Math.random()*10) % 2 === 0){
+        // up down
+        posX = 9 * blockSize;
+        posY = blockSize;
+        dir = "ud";
+    }
+    else{
+        //left right
+        posX = blockSize;
+        posY = 7 * blockSize;
+        dir = "lr";
+    }
+    monster = monsters.create(posX, posY , monsterTypes[waves[currentWave].order[currentMonster]].image);
+    monster.dir = dir;
+    monster.scale.setTo(blockSize/50,blockSize/50);
+    monster.speed = monsterTypes[waves[currentWave].order[currentMonster]].speed;
+    monster.body.velocity.x = 0;
+    monster.body.velocity.y = 0;
+    monster.anchor.setTo(0.5, 0.5);
+    monster.animations.add('move', [0,1,2,3], 5, true);
+    monster.animations.play('move');
+    monster.startHealth = monsterTypes[waves[currentWave].order[currentMonster]].life;
+    monster.health = monster.startHealth;
+    monster.goTo = convertReal2Matrix([monster.body.position.x,monster.body.position.y]);
+    monster.alive = true;
+    monster.price = monsterTypes[waves[currentWave].order[currentMonster]].price;
+    monster.needsUpdate = true;
+    monster.path = [monster.goTo];
+    monster.newPathFound = false;
+    monster.pathPos = 1;
+    //color = Math.floor(Math.random() * 0xffffff);
+    monster.tint = monsterTypes[waves[currentWave].order[currentMonster]].color;
+
+    monster.lifeBar = game.add.sprite(-halfBlockSize, -halfBlockSize, 'lifeBar');
+    monster.lifeBar.scale.setTo(blockSize/200, blockSize/400);
+    monster.addChild(monster.lifeBar);
+}
+
 function update(){
     counter++;
     game.physics.arcade.overlap(bullets, monsters, bulletHit, null, this);
@@ -925,6 +988,11 @@ function update(){
         if (time <=0){
             time = 0;
         }
+        callbackFunction(time,function(){
+            timeBar.scale.setTo((time/500) * blockSize/50, blockSize/100);
+            });
+
+        /*
         if (bar){
             //bar.destroy();
             //timerBar.clear();
@@ -936,6 +1004,7 @@ function update(){
         timerBar.beginFill((255 - Math.floor(time/2)) << 16, 1);
         //timerBar.beginFill(0xFF0000, 1);
         bar = timerBar.drawRect(16 * blockSize, Math.floor(blockSize / 2), time/3, 20);
+        */
     }
 
     // spawn monsters
@@ -947,38 +1016,7 @@ function update(){
             timer = waves[currentWave].betweenMonstersTime;
         }
 
-        // Release a enemy
-        if (Math.floor(Math.random()*10) % 2 === 0){
-            // up down
-            monster = monsters.create(9 * blockSize,  blockSize , monsterTypes[waves[currentWave].order[currentMonster]].image);
-            monster.dir = "ud";
-        }
-        else{
-            //left right
-            monster = monsters.create(blockSize, 7 * blockSize , monsterTypes[waves[currentWave].order[currentMonster]].image);
-            monster.dir = "lr";
-        }
-        monster.scale.setTo(blockSize/50,blockSize/50);
-        monster.speed = monsterTypes[waves[currentWave].order[currentMonster]].speed;
-        monster.body.velocity.x = 0;
-        monster.body.velocity.y = 0;
-        monster.anchor.setTo(0.5, 0.5);
-        monster.animations.add('move', [0,1,2,3], 5, true);
-        monster.animations.play('move');
-        monster.startHealth = monsterTypes[waves[currentWave].order[currentMonster]].life;
-        monster.health = monster.startHealth;
-        monster.goTo = convertReal2Matrix([monster.body.position.x,monster.body.position.y]);
-        monster.alive = true;
-        monster.price = monsterTypes[waves[currentWave].order[currentMonster]].price;
-        monster.needsUpdate = true;
-        monster.path = [monster.goTo];
-        monster.newPathFound = false;
-        monster.pathPos = 1;
-        //color = Math.floor(Math.random() * 0xffffff);
-        monster.tint = monsterTypes[waves[currentWave].order[currentMonster]].color;
-
-        //monsterArray.push(monster);
-
+        releaseMonster();
 
         currentMonster ++;
 
