@@ -5,17 +5,19 @@ Tower Defence.
 game field is 100,100 x 750x650
 
 TODO:
-- invisible monsters?
+- add more callbacks to make game less heavy
+
+- add nicer range circle
 - add no money indicator
 - add half size to level
 - add small wall piece
 - create nice graphics
 - update sound
 - update tower types
-- make counter bar nicer
 - add more monster versions
 - fix build in front of gate bug
 - populate gun type in the right way.
+- explode into new monsters
 */
 
 var blockSize = 50;
@@ -100,7 +102,8 @@ var fieldArray = [
 
 var waves = [
     //max length of waves is 500
-    {order :[1,2,2,2,2],                                     betweenMonstersTime :180 ,betweenWavesTime: 500},
+    {order :[1,2,3,4,5],                                     betweenMonstersTime :180 ,betweenWavesTime: 500},
+    {order :[5,5,5,5,5],                                     betweenMonstersTime :180 ,betweenWavesTime: 500},
     {order :[3,3,3,3,3],                                     betweenMonstersTime :180 ,betweenWavesTime: 500},
     {order :[4,4,4,4,4],                                     betweenMonstersTime :180 ,betweenWavesTime: 500},
     {order :[1,1,1,1,1],                                     betweenMonstersTime :180 ,betweenWavesTime: 500},
@@ -139,6 +142,13 @@ monsterTypes[4] = {
     life : 25,
     speed : 6 * blockSize,
     image : "monster04",
+    price : 5,
+    color : 0xff00ff,
+};
+monsterTypes[5] = {
+    life : 50,
+    speed : 2 * blockSize,
+    image : "monster05",
     price : 5,
     color : 0xff00ff,
 };
@@ -268,6 +278,7 @@ function preload(){
     game.load.spritesheet('monster02', 'assets/baddie02.png',50,50,4 );
     game.load.spritesheet('monster03', 'assets/baddie03.png',50,50,4 );
     game.load.spritesheet('monster04', 'assets/baddie04.png',50,50,4 );
+    game.load.spritesheet('monster05', 'assets/baddie05.png',50,50,4 );
     game.load.spritesheet('particle' , 'assets/particle.png',50,50,4 );
     game.load.spritesheet('numbers'  , 'assets/numbers.png' ,40,50,10);
     game.load.image      ('reset'    , 'assets/reset.png'            );
@@ -372,7 +383,7 @@ function create(){
     emitter.makeParticles('particle');
     emitter.minParticleSpeed.setTo(-16 * blockSize, -16 * blockSize);
     emitter.maxParticleSpeed.setTo(16 * blockSize, 16 * blockSize);
-    emitter.gravity = 0;
+    emitter.gravity = 50;
     emitter.minParticleScale = 0.5;
     emitter.maxParticleScale = 0.5;
 
@@ -542,7 +553,7 @@ function click(event){
     if (event.x > 2 * blockSize && event.x < 15 * blockSize && event.y > 2 * blockSize && event.y < 13 * blockSize ){
         if (pauseState === false && resetState === false){
             field = convertReal2Matrix([event.x,event.y]);
-            // which tower?
+            // place a tower?
             if (selectedTower <= 7 ){
                 if (fieldArray[field[0]][field[1]] === 0 && money >= gunTypes[selectedTower].price){
                     temp = [];
@@ -550,6 +561,22 @@ function click(event){
                         temp.push(fieldArray[x].slice(0));
                     }
                     temp[field[0]][field[1]] = 1;
+                    // close the exit holes to prevend errors
+                    temp[6][0] = 1;
+                    temp[7][0] = 0;
+                    temp[8][0] = 1;
+
+                    temp[6][12] = 1;
+                    temp[7][12] = 0;
+                    temp[8][12] = 1;
+
+                    temp[0][5] = 1;
+                    temp[0][6] = 0;
+                    temp[0][7] = 1;
+
+                    temp[14][5] = 1;
+                    temp[14][6] = 0;
+                    temp[14][7] = 1;
 
                     checkTowerPos.pos = [field[0],field[1]];
                     checkTowerPos.towerType = selectedTower;
@@ -568,7 +595,7 @@ function click(event){
                                     blocked.alpha = 0.8;
                                 }
                             });
-                            pathfinderLR.preparePathCalculation([0, 7], [14,7]);
+                            pathfinderLR.preparePathCalculation([0, 6], [14,6]);
                             pathfinderLR.calculatePath();
                         }
                         else{
@@ -745,7 +772,7 @@ function click(event){
         {
             game.paused = true;
             pauseState = true;
-            reset = game.add.sprite(width/2, heigth/2, 'reset');
+            reset = game.add.sprite(width/4, heigth/2, 'reset');
             reset.scale.setTo(blockSize/50,blockSize/50);
             resetState = true;
             console.log("games paused");
@@ -787,7 +814,7 @@ function bulletHit(bullet,monster){
         emitter.forEach(function(particle) {
             particle.tint = monster.tint;
         });
-        emitter.start(true,250,null,5);
+        emitter.start(true,150,null,25);
 
     }
     else{
@@ -925,18 +952,6 @@ function callbackFunction(variable,callback){
     callback();
 }
 
-/*
-dosomething("blaha", function(){
-        alert("Yay just like jQuery callbacks!");
-    });
-
-
-    function dosomething(damsg, callback){
-        alert(damsg);
-        if(typeof callback == "function")
-        callback();
-    }*/
-
 function releaseMonster(){
 
     if (Math.floor(Math.random()*10) % 2 === 0){
@@ -992,19 +1007,6 @@ function update(){
             timeBar.scale.setTo((time/500) * blockSize/50, blockSize/100);
             });
 
-        /*
-        if (bar){
-            //bar.destroy();
-            //timerBar.clear();
-            bar.clear();
-        }
-        //console.log(time);
-        timerBar = game.add.graphics(0, 0);
-        timerBar.lineStyle(0);
-        timerBar.beginFill((255 - Math.floor(time/2)) << 16, 1);
-        //timerBar.beginFill(0xFF0000, 1);
-        bar = timerBar.drawRect(16 * blockSize, Math.floor(blockSize / 2), time/3, 20);
-        */
     }
 
     // spawn monsters
@@ -1016,22 +1018,18 @@ function update(){
             timer = waves[currentWave].betweenMonstersTime;
         }
 
-        releaseMonster();
+        callbackFunction("",releaseMonster);
 
         currentMonster ++;
-
+        // new wave
         if (currentMonster >= waves[currentWave].order.length){
-            // new wave
-
             currentWave ++;
             currentMonster = 0;
-            console.log("Current wave: " + currentWave +" Current monster: " + currentMonster);
             timer  = waves[currentWave].betweenWavesTime;
         }
         if (currentWave >= waves.length){
             console.log("you won");
         }
-        // should be 3* a second
     }
 
     // check up on guns
@@ -1210,7 +1208,7 @@ function update(){
                     gameOver = game.add.sprite(Math.round(width/4), Math.round(heigth/4), 'gameover');
                     gameOver.scale.setTo(blockSize/50,blockSize/50);
                     if (game.paused === false) {game.paused = true;}
-                    reset = game.add.sprite(width/2, heigth/2, 'reset');
+                    reset = game.add.sprite(width/4, heigth/2, 'reset');
                     resetState = true;
                     gameOverState = true;
                 }
@@ -1226,12 +1224,8 @@ function update(){
     // check up on bullets
     for (i=0;i<bullets.length;i++){
         bullet = bullets.getAt(i);
-        //bullets.forEachExists(function (bullet){
         if (!bullet.exists || (bullet.body.position.x > 15 * blockSize || bullet.body.position.x < 2 * blockSize ||
              bullet.body.position.y > 13 * blockSize||bullet.body.position.y < 2 * blockSize) ){
-            //bullet.exists = false;
-            //bullet.destroy();
-            //bullet.remove();
             toBeRemoved.push(bullet);
         }
     }
