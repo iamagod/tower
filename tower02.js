@@ -5,8 +5,6 @@ Tower Defence.
 game field is 100,100 x 750x650
 
 TODO:
-- add more callbacks to make game less heavy
-
 - add nicer range circle
 - add no money indicator
 - add half size to level
@@ -19,8 +17,12 @@ TODO:
 - populate gun type in the right way.
 - explode into new monsters
 */
+var w = window.innerWidth * window.devicePixelRatio,
+    h = window.innerHeight * window.devicePixelRatio;
+console.log(w + " " +h);
 
-var blockSize = 50;
+var blockSize = Math.floor(w/20);
+
 var halfBlockSize = Math.floor(blockSize/2);
 
 var matrixSizeX = 15;
@@ -299,6 +301,7 @@ function create(){
     pop = game.add.audio('pop');
     splash = game.add.audio('splash');
 
+
     bg = game.add.sprite(0, 0, 'field');
     bg.scale.setTo(20 * blockSize/1000, 14 * blockSize/700);
     blocked = game.add.sprite(Math.round(width/3),Math.round(heigth/2),"blocked");
@@ -355,6 +358,7 @@ function create(){
         gun[i].inputEnabled = true;
         gun[i].events.onInputDown.add(selectTower);
 
+
         gunPrice10 = numbers.create((16 + i % 4) * blockSize,(3 + 2*Math.floor(i/4)) * blockSize, 'numbers', Math.floor(gunTypes[i].price / 10));
         gunPrice1 = numbers.create((16 + i % 4) * blockSize + 1 * 0.35 * blockSize,(3 + 2*Math.floor(i/4)) * blockSize, 'numbers', gunTypes[i].price % 10);
         gunPrice10.scale.setTo(blockSize/100,blockSize/100);
@@ -377,7 +381,7 @@ function create(){
     bullets = game.add.group();
     bullets.enableBody = true;
     game.input.onDown.add(click, self);
-
+/*
     emitter = game.add.emitter(100, 100, 15000);
 
     emitter.makeParticles('particle');
@@ -386,7 +390,8 @@ function create(){
     emitter.gravity = 50;
     emitter.minParticleScale = 0.5;
     emitter.maxParticleScale = 0.5;
-
+    emitter.on = false;
+*/
     timeBar = game.add.sprite(16 * blockSize, halfBlockSize, 'lifeBar');
     timeBar.scale.setTo(blockSize/50, blockSize/100);
 
@@ -694,6 +699,7 @@ function click(event){
         }
     }
 
+
     // upgrade tower yes
     if (upgradeActive && event.x > 16 * blockSize && event.x < 18 * blockSize &&
                          event.y > 9 * blockSize && event.y < 10 * blockSize ){
@@ -780,7 +786,8 @@ function click(event){
     }
 
     // reset button
-    if (resetState && event.x >= width/2 && event.x <= width/2 + 7 * blockSize && event.y >= heigth/2 && event.y<= heigth/2 + 2 * blockSize){
+    if (resetState && event.x >= width/4 && event.x <= width/4 + 7 * blockSize &&
+                      event.y >= heigth/2 && event.y<= heigth/2 + 2 * blockSize){
         resetGame();
         reset.destroy();
         if (gameOverState){
@@ -792,6 +799,28 @@ function click(event){
         pauseState = false;
         resetState = false;
     }
+
+}
+
+
+function explode(pos,tint){
+
+    //emitter.on = true;
+    emitter = game.add.emitter(100, 100, 25);
+
+    emitter.makeParticles('particle');
+    emitter.minParticleSpeed.setTo(-16 * blockSize, -16 * blockSize);
+    emitter.maxParticleSpeed.setTo(16 * blockSize, 16 * blockSize);
+    emitter.gravity = 50;
+    emitter.minParticleScale = blockSize/100;
+    emitter.maxParticleScale = blockSize/100;
+
+    emitter.x = pos[0];
+    emitter.y = pos[1];
+    emitter.forEach(function(particle) {
+        particle.tint = tint;
+    });
+    emitter.start(true,250,null,25);
 }
 
 function bulletHit(bullet,monster){
@@ -809,12 +838,15 @@ function bulletHit(bullet,monster){
 
         splash.play();
 
+        explode([posX,posY],monster.tint);
+        /*
         emitter.x = posX;
         emitter.y = posY;
         emitter.forEach(function(particle) {
             particle.tint = monster.tint;
         });
-        emitter.start(true,150,null,25);
+        emitter.start(true,250,null,25);
+        */
 
     }
     else{
@@ -994,8 +1026,11 @@ function releaseMonster(){
 
 function update(){
     counter++;
+
     game.physics.arcade.overlap(bullets, monsters, bulletHit, null, this);
     time = timer-counter;
+
+
     // timer bar
     if (running  && (time % 5 ===0  )){
         //console.log(timer-counter);
@@ -1046,14 +1081,6 @@ function update(){
             monsterToAttack = null;
         }
 
-        /*
-        monsters.forEach(function(monster){
-            delta = game.physics.arcade.distanceBetween(gun,monster);
-            if ( delta < gun.range && delta < closest){
-                closest = delta;
-                monsterToAttack = monster;
-            }
-        });*/
 
         if (monsterToAttack){
             gun.body.rotation = game.physics.arcade.angleBetween(monsterToAttack,gun)* 180 / Math.PI + 180+90;
@@ -1077,6 +1104,10 @@ function update(){
 
     // check up on monsters
     monsters.forEach(function(monster){
+        //monster.body.velocity.y = 0;
+        //monster.body.velocity.x = monster.speed;
+
+
         if (monster !== undefined){
             goToRealX = convertMatrix2Real(monster.goTo)[0];
             goToRealY = convertMatrix2Real(monster.goTo)[1];
@@ -1215,11 +1246,13 @@ function update(){
 
             }
         }
+
     });
 
     /*monsterArray = monsterArray.filter(function(monster){
         return (monster.alive);
     });*/
+
 
     // check up on bullets
     for (i=0;i<bullets.length;i++){
@@ -1241,4 +1274,14 @@ function update(){
     else{
         blocked.alpha = 0;
     }
+
+    // fade particles
+    count = 0;
+    if (emitter){
+        emitter.forEachAlive(function(p){
+    		p.alpha = p.lifespan / emitter.lifespan;
+            count++;
+        });
+    }
+
 }
