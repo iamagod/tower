@@ -5,15 +5,19 @@ Tower Defence.
 game field is 100,100 x 750x650
 
 TODO:
-
-- add no money indicator
 - add more monster versions
 - populate gun type in the right way.
 
+- tower remove free before start
+- wave number indicator
+- lose life sound
+
 - add json file for tower and monster settings
-
 - you win pic
-
+- add airplanes
+- no select still build bug
+- remove upgrade if not selected
+- nomore updates
 - blur tower if to expensive
 - add half size to level
 - add small wall piece
@@ -29,6 +33,7 @@ var w = window.innerWidth * window.devicePixelRatio,
 console.log(w + " " +h);
 
 var blockSize = Math.floor((w-300)/20);
+var BS = blockSize;
 
 var halfBlockSize = Math.floor(blockSize/2);
 
@@ -112,18 +117,18 @@ var fieldArray = [
 
 var waves = [
     //max length of waves is 500
-    {order :[1,2,3,4,5],                                     betweenMonstersTime :180 ,betweenWavesTime: 500},
-    {order :[5,5,5,5,5],                                     betweenMonstersTime :180 ,betweenWavesTime: 500},
-    {order :[3,3,3,3,3],                                     betweenMonstersTime :180 ,betweenWavesTime: 500},
-    {order :[4,4,4,4,4],                                     betweenMonstersTime :180 ,betweenWavesTime: 500},
-    {order :[1,1,1,1,1],                                     betweenMonstersTime :180 ,betweenWavesTime: 500},
-    {order :[1,2,1,2,1],                                     betweenMonstersTime :180 ,betweenWavesTime: 500},
-    {order :[1,1,1,2,2,2],                                   betweenMonstersTime :180 ,betweenWavesTime: 500},
-    {order :[3,3,3,2,2,2],                                   betweenMonstersTime :180 ,betweenWavesTime: 500},
-    {order :[1,3,1,2,2,2,1,2],                               betweenMonstersTime :180 ,betweenWavesTime: 500},
-    {order :[1,3,1,2,2,2,1,2,1,2,1,2],                       betweenMonstersTime :180 ,betweenWavesTime: 500},
-    {order :[1,3,1,2,2,2,1,1,3,3,1,1,1,1],                   betweenMonstersTime :180 ,betweenWavesTime: 500},
-    {order :[1,3,1,2,2,2,3,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2], betweenMonstersTime :180 ,betweenWavesTime: 500},
+    {order :[1,2,3,4,5],                                     betweenMonstersTime :20 ,betweenWavesTime: 500},
+    {order :[5,5,5,5,5],                                     betweenMonstersTime :5 ,betweenWavesTime: 500},
+    {order :[3,3,3,3,3],                                     betweenMonstersTime :10 ,betweenWavesTime: 500},
+    {order :[4,4,4,4,4],                                     betweenMonstersTime :10 ,betweenWavesTime: 500},
+    {order :[1,1,1,1,1],                                     betweenMonstersTime :40 ,betweenWavesTime: 500},
+    {order :[1,2,1,2,1],                                     betweenMonstersTime :10 ,betweenWavesTime: 500},
+    {order :[1,1,1,2,2,2],                                   betweenMonstersTime :10 ,betweenWavesTime: 500},
+    {order :[3,3,3,2,2,2],                                   betweenMonstersTime :10 ,betweenWavesTime: 500},
+    {order :[1,3,1,2,2,2,1,2],                               betweenMonstersTime :10 ,betweenWavesTime: 500},
+    {order :[1,3,1,2,2,2,1,2,1,2,1,2],                       betweenMonstersTime :10 ,betweenWavesTime: 500},
+    {order :[1,3,1,2,2,2,1,1,3,3,1,1,1,1],                   betweenMonstersTime :10 ,betweenWavesTime: 500},
+    {order :[1,3,1,2,2,2,3,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2], betweenMonstersTime :10 ,betweenWavesTime: 500},
     ];
 
 var monsterTypes = [];
@@ -165,109 +170,78 @@ monsterTypes[5] = {
 
 var gunTypes = [];
 
-gunTypes[0] = {
-    price : 5,
-    speed : 50,
-    range : 2 * blockSize,
-    matrixNumber :1,
-    image : 0,
-    attackType : "closest",
-    damage : 10,
-    bulletLife : 500,
-    bulletSpeed : 4 * blockSize,
-};
-gunTypes[1] = {
-    price : 10,
-    speed : 200,
-    range : 4 * blockSize,
-    matrixNumber :2,
-    image : 1,
-    attackType : "weakest",
-    damage : 25,
-    bulletLife : 500,
-    bulletSpeed : 100,
-};
-gunTypes[2] = {
-    price : 10,
-    speed : 4 * blockSize,
-    range : 4 * blockSize,
-    matrixNumber :3,
-    image : 2,
-    attackType : "weakest",
-    damage : 50,
-    bulletLife : 750,
-    bulletSpeed : 2 * blockSize
-};
-gunTypes[3] = {
-    price : 10,
-    speed : 4 * blockSize,
-    range : 4 * blockSize,
-    matrixNumber :4,
-    image : 3,
-    attackType : "weakest",
-    damage : 25,
-    bulletLife : 500,
-    bulletSpeed : 2 * blockSize
-};
-gunTypes[4] = {
-    price : 10,
-    speed : 4 * blockSize,
-    range : 4 * blockSize,
-    matrixNumber :5,
-    image : 4,
-    attackType : "weakest",
-    damage : 25,
-    bulletLife : 500,
-    bulletSpeed : 4 * blockSize
-};
-gunTypes[5] = {
-    price : 10,
-    speed : 4 * blockSize,
-    range : 4 * blockSize,
-    matrixNumber :6,
-    image : 5,
-    attackType : "weakest",
-    damage : 25,
-    bulletLife : 500,
-    bulletSpeed : 2 * blockSize
-};
-gunTypes[6] = {
-    price : 10,
-    speed : 4 * blockSize,
-    range : 4 * blockSize,
-    matrixNumber :7,
-    image : 6,
-    attackType : "weakest",
-    damage : 25,
-    bulletLife : 500,
-    bulletSpeed : 2 * blockSize
-};
-gunTypes[7] = {
-    price : 10,
-    speed : 4 * blockSize,
-    range : 4 * blockSize,
-    matrixNumber :8,
-    image : 7,
-    attackType : "weakest",
-    damage : 25,
-    bulletLife : 500,
-    bulletSpeed : 2 * blockSize
-};
+function setupGuns(){
 
-// populate gunTypes Array.
-for (i=1;i<=5;i++){
-    for (j=0;j<8;j++){
-        gunTypes[i * 10 + j] = {};
-        gunTypes[i * 10 + j].price = gunTypes[j].price + i * 5;
-        gunTypes[i * 10 + j].speed = gunTypes[j].speed - i * Math.floor(blockSize/50);
-        gunTypes[i * 10 + j].range = gunTypes[j].range + i * 25;
-        gunTypes[i * 10 + j].matrixNumber = i*10+j +1;
-        gunTypes[i * 10 + j].image = j;
-        gunTypes[i * 10 + j].attackType = "weakest";
-        gunTypes[i * 10 + j].damage = gunTypes[j].damage + i *10;
-        gunTypes[i * 10 + j].bulletLife = gunTypes[j].bulletLife + i*250;
-        gunTypes[i * 10 + j].bulletSpeed = gunTypes[j].bulletSpeed + i*0.5*blockSize;
+    // gun 1 small gun
+    gunTypes[0]  = {price : 5,   speed : 50, range : 2   * BS, attackType : "closest", damage : 10, bulletLife : 500,  bulletSpeed : 4   * BS, bulletImage :18};
+    gunTypes[10] = {price : 10,  speed : 45, range : 2.1 * BS, attackType : "closest", damage : 12, bulletLife : 550,  bulletSpeed : 4.2 * BS,bulletImage :18};
+    gunTypes[20] = {price : 20,  speed : 50, range : 2.2 * BS, attackType : "closest", damage : 14, bulletLife : 600,  bulletSpeed : 4.4 * BS,bulletImage :18};
+    gunTypes[30] = {price : 40,  speed : 35, range : 2.3 * BS, attackType : "closest", damage : 16, bulletLife : 650,  bulletSpeed : 4.6 * BS,bulletImage :18};
+    gunTypes[40] = {price : 80,  speed : 30, range : 2.4 * BS, attackType : "closest", damage : 18, bulletLife : 700,  bulletSpeed : 4.8 * BS,bulletImage :18};
+    gunTypes[50] = {price : 250, speed : 20, range : 3   * BS, attackType : "weakest", damage : 35, bulletLife : 1000, bulletSpeed : 6   * BS,bulletImage :18};
 
+    // gun 2 dubble gun
+    gunTypes[1]  = {price : 10,  speed : 20, range : 1.5 * BS, attackType : "closest", damage : 3,  bulletLife : 300,  bulletSpeed : 6   * BS,bulletImage :18};
+    gunTypes[11] = {price : 20,  speed : 15, range : 1.6 * BS, attackType : "closest", damage : 6,  bulletLife : 350,  bulletSpeed : 6.2 * BS,bulletImage :18};
+    gunTypes[21] = {price : 40,  speed : 10, range : 1.7 * BS, attackType : "closest", damage : 9,  bulletLife : 400,  bulletSpeed : 6.4 * BS,bulletImage :18};
+    gunTypes[31] = {price : 80,  speed : 7,  range : 1.8 * BS, attackType : "closest", damage : 12, bulletLife : 450,  bulletSpeed : 6.6 * BS,bulletImage :18};
+    gunTypes[41] = {price : 160, speed : 5,  range : 1.9 * BS, attackType : "closest", damage : 15, bulletLife : 500,  bulletSpeed : 6.8 * BS,bulletImage :18};
+    gunTypes[51] = {price : 400, speed : 5,  range : 3   * BS, attackType : "closest", damage : 20, bulletLife : 700,  bulletSpeed : 7.5 * BS,bulletImage :18};
+
+    // gun sonic tower
+    gunTypes[2]  = {price : 5,   speed : 50, range : 2   * BS, attackType : "closest", damage : 10, bulletLife : 500,  bulletSpeed : 4   * BS,bulletImage :15};
+    gunTypes[12] = {price : 10,  speed : 45, range : 2.1 * BS, attackType : "closest", damage : 12, bulletLife : 550,  bulletSpeed : 4.2 * BS,bulletImage :15};
+    gunTypes[22] = {price : 20,  speed : 50, range : 2.2 * BS, attackType : "closest", damage : 14, bulletLife : 600,  bulletSpeed : 4.4 * BS,bulletImage :15};
+    gunTypes[32] = {price : 40,  speed : 35, range : 2.3 * BS, attackType : "closest", damage : 16, bulletLife : 650,  bulletSpeed : 4.6 * BS,bulletImage :15};
+    gunTypes[42] = {price : 80,  speed : 30, range : 2.4 * BS, attackType : "closest", damage : 18, bulletLife : 700,  bulletSpeed : 4.8 * BS,bulletImage :15};
+    gunTypes[52] = {price : 250, speed : 20, range : 3   * BS, attackType : "weakest", damage : 35, bulletLife : 1000, bulletSpeed : 6   * BS,bulletImage :15};
+
+    // gun rocket launcher
+    gunTypes[3]  = {price : 50, speed : 100, range : 4   * BS, attackType : "farest", damage : 30, bulletLife : 1500,  bulletSpeed : 6   * BS,bulletImage :16};
+    gunTypes[13] = {price : 30,  speed : 90, range : 4.1 * BS, attackType : "farest", damage : 35, bulletLife : 1750,  bulletSpeed : 4.2 * BS,bulletImage :16};
+    gunTypes[23] = {price : 60,  speed : 80, range : 4.2 * BS, attackType : "farest", damage : 40, bulletLife : 2000,  bulletSpeed : 4.4 * BS,bulletImage :16};
+    gunTypes[33] = {price : 100, speed : 70, range : 2.3 * BS, attackType : "farest", damage : 45, bulletLife : 2250,  bulletSpeed : 4.6 * BS,bulletImage :16};
+    gunTypes[43] = {price : 150, speed : 60, range : 4.4 * BS, attackType : "farest", damage : 50, bulletLife : 2500,  bulletSpeed : 4.8 * BS,bulletImage :16};
+    gunTypes[53] = {price : 250, speed : 40, range : 5   * BS, attackType : "farest", damage : 70, bulletLife : 3000,  bulletSpeed : 6   * BS,bulletImage :16};
+
+    // gun 5
+    gunTypes[4]  = {price : 5,   speed : 50, range : 2   * BS, attackType : "closest", damage : 10, bulletLife : 500,  bulletSpeed : 4   * BS,bulletImage :18};
+    gunTypes[14] = {price : 10,  speed : 45, range : 2.1 * BS, attackType : "closest", damage : 12, bulletLife : 550,  bulletSpeed : 4.2 * BS,bulletImage :18};
+    gunTypes[24] = {price : 20,  speed : 50, range : 2.2 * BS, attackType : "closest", damage : 14, bulletLife : 600,  bulletSpeed : 4.4 * BS,bulletImage :18};
+    gunTypes[34] = {price : 40,  speed : 35, range : 2.3 * BS, attackType : "closest", damage : 16, bulletLife : 650,  bulletSpeed : 4.6 * BS,bulletImage :18};
+    gunTypes[44] = {price : 80,  speed : 30, range : 2.4 * BS, attackType : "closest", damage : 18, bulletLife : 700,  bulletSpeed : 4.8 * BS,bulletImage :18};
+    gunTypes[54] = {price : 250, speed : 20, range : 3   * BS, attackType : "weakest", damage : 35, bulletLife : 1000, bulletSpeed : 6   * BS,bulletImage :18};
+
+    // gun 6
+    gunTypes[5]  = {price : 5,   speed : 50, range : 2   * BS, attackType : "closest", damage : 10, bulletLife : 500,  bulletSpeed : 4   * BS,bulletImage :18};
+    gunTypes[15] = {price : 10,  speed : 45, range : 2.1 * BS, attackType : "closest", damage : 12, bulletLife : 550,  bulletSpeed : 4.2 * BS,bulletImage :18};
+    gunTypes[25] = {price : 20,  speed : 50, range : 2.2 * BS, attackType : "closest", damage : 14, bulletLife : 600,  bulletSpeed : 4.4 * BS,bulletImage :18};
+    gunTypes[35] = {price : 40,  speed : 35, range : 2.3 * BS, attackType : "closest", damage : 16, bulletLife : 650,  bulletSpeed : 4.6 * BS,bulletImage :18};
+    gunTypes[45] = {price : 80,  speed : 30, range : 2.4 * BS, attackType : "closest", damage : 18, bulletLife : 700,  bulletSpeed : 4.8 * BS,bulletImage :18};
+    gunTypes[55] = {price : 250, speed : 20, range : 3   * BS, attackType : "weakest", damage : 35, bulletLife : 1000, bulletSpeed : 6   * BS,bulletImage :18};
+
+    // gun 7
+    gunTypes[6]  = {price : 5,   speed : 50, range : 2   * BS, attackType : "closest", damage : 10, bulletLife : 500,  bulletSpeed : 4   * BS,bulletImage :18};
+    gunTypes[16] = {price : 10,  speed : 45, range : 2.1 * BS, attackType : "closest", damage : 12, bulletLife : 550,  bulletSpeed : 4.2 * BS,bulletImage :18};
+    gunTypes[26] = {price : 20,  speed : 50, range : 2.2 * BS, attackType : "closest", damage : 14, bulletLife : 600,  bulletSpeed : 4.4 * BS,bulletImage :18};
+    gunTypes[36] = {price : 40,  speed : 35, range : 2.3 * BS, attackType : "closest", damage : 16, bulletLife : 650,  bulletSpeed : 4.6 * BS,bulletImage :18};
+    gunTypes[46] = {price : 80,  speed : 30, range : 2.4 * BS, attackType : "closest", damage : 18, bulletLife : 700,  bulletSpeed : 4.8 * BS,bulletImage :18};
+    gunTypes[56] = {price : 250, speed : 20, range : 3   * BS, attackType : "weakest", damage : 35, bulletLife : 1000, bulletSpeed : 6   * BS,bulletImage :18};
+
+    // gun 8
+    gunTypes[7]  = {price : 5,   speed : 50, range : 2   * BS, attackType : "closest", damage : 10, bulletLife : 500,  bulletSpeed : 4   * BS,bulletImage :18};
+    gunTypes[17] = {price : 10,  speed : 45, range : 2.1 * BS, attackType : "closest", damage : 12, bulletLife : 550,  bulletSpeed : 4.2 * BS,bulletImage :18};
+    gunTypes[27] = {price : 20,  speed : 50, range : 2.2 * BS, attackType : "closest", damage : 14, bulletLife : 600,  bulletSpeed : 4.4 * BS,bulletImage :18};
+    gunTypes[37] = {price : 40,  speed : 35, range : 2.3 * BS, attackType : "closest", damage : 16, bulletLife : 650,  bulletSpeed : 4.6 * BS,bulletImage :18};
+    gunTypes[47] = {price : 80,  speed : 30, range : 2.4 * BS, attackType : "closest", damage : 18, bulletLife : 700,  bulletSpeed : 4.8 * BS,bulletImage :18};
+    gunTypes[57] = {price : 250, speed : 20, range : 3   * BS, attackType : "weakest", damage : 35, bulletLife : 1000, bulletSpeed : 6   * BS,bulletImage :18};
+
+    // populate gunTypes Array.
+    for (i=0;i<=5;i++){
+        for (j=0;j<8;j++){
+            gunTypes[i * 10 + j].matrixNumber = i*10+j +1;
+            gunTypes[i * 10 + j].image = j;
+        }
     }
 }
 
@@ -313,6 +287,7 @@ function create(){
     pop = game.add.audio('pop');
     splash = game.add.audio('splash');
 
+    setupGuns();
 
     bg = game.add.sprite(0, 0, 'field');
     bg.scale.setTo(20 * blockSize/1000, 14 * blockSize/700);
@@ -525,11 +500,12 @@ function createTower(realPos, matrixPos, type){
     gun.range = gunTypes[type].range;
     gun.speed = gunTypes[type].speed;
     gun.damage = gunTypes[type].damage;
+    gun.bulletImage = gunTypes[type].bulletImage;
     gun.counter = 0;
     gun.matrixPos = [matrixPos[0],matrixPos[1]];
     gun.bulletSpeed = gunTypes[type].bulletSpeed;
     gun.bulletLife = gunTypes[type].bulletLife;
-
+    gun.attackType =  gunTypes[type].attackType;
     gunArray.push(gun);
 
     build.play();
@@ -843,35 +819,58 @@ function explode(pos,tint){
 }
 
 function bulletHit(bullet,monster){
+    // sonic hit
+    if (bullet.towerType % 10 === 2){
+        monster.health = monster.health/2;
+    }
+    // rocket hit
+    else if (bullet.towerType % 10 === 3){
+        // find monster in neigberhood
+        monsters.forEach(function(monsterField){
+            if (monsterField !== undefined && monsterField !== monster){
+                X = monsterField.body.position.x - bullet.body.position.x;
+                Y = monsterField.body.position.y - bullet.body.position.y;
+                if (X*X + Y*Y <= 2 * blockSize*blockSize){
+                    monsterField.health -= bullet.damage;
+                    if (monster.health <= 0){
+                        posX = monsterField.body.position.x;
+                        posY = monsterField.body.position.y;
 
-    monster.health -= bullet.damage;
-    if (monster.health <= 0)
-    {
+                        kill++;
+                        changeKill();
+                        money += monsterField.price;
+                        changeMoney();
+                        splash.play();
+                        explode([posX,posY],monsterField.tint);
+                        monsterField.destroy();
+                    }
+                    else{
+                        scale = monsterField.health / monsterField.startHealth;
+                        monsterField.lifeBar.scale.setTo(scale * blockSize/200, blockSize/400);
+                    }
+                }
+            }
+        });
+        monster.health -= bullet.damage;
+    }
+    else{
+        monster.health -= bullet.damage;
+    }
+
+    if (monster.health <= 0){
         posX = monster.body.position.x;
         posY = monster.body.position.y;
-        monster.destroy();
+
         kill++;
         changeKill();
         money += monster.price;
         changeMoney();
-
         splash.play();
-
         explode([posX,posY],monster.tint);
-        /*
-        emitter.x = posX;
-        emitter.y = posY;
-        emitter.forEach(function(particle) {
-            particle.tint = monster.tint;
-        });
-        emitter.start(true,250,null,25);
-        */
-
+        monster.destroy();
     }
     else{
         scale = monster.health / monster.startHealth;
-        //monster.scale.setTo(scale, scale);
-        //monster.alpha = scale;
         monster.lifeBar.scale.setTo(scale * blockSize/200, blockSize/400);
     }
 
@@ -977,6 +976,21 @@ function attackClosestMonster(gun){
         //console.log("Delta: "+delta);
         if ( delta < gun.range && delta < closest){
             closest = delta;
+            monsterToAttack = monster;
+        }
+    }
+    return monsterToAttack;
+}
+
+function attackFarestMonster(gun){
+    var monsterToAttack = null;
+    var farest = 0;
+    for (i=0;i<monsters.length;i++){
+        monster = monsters.getAt(i);
+        delta = game.physics.arcade.distanceBetween(gun,monster);
+        //console.log("Delta: "+delta);
+        if ( delta < gun.range && delta > farest){
+            farest = delta;
             monsterToAttack = monster;
         }
     }
@@ -1090,14 +1104,17 @@ function update(){
     guns.forEach(function(gun){
         gun.counter++;
         closest = gun.range + 1;
-        if (gun.type === 0){
+        if (gun.attackType === "closest"){
             monsterToAttack = attackClosestMonster(gun);
         }
-        else if (gun.type >= 1){
+        else if (gun.attackType === "weakest"){
             monsterToAttack = attackWeakestMonster(gun);
         }
+        else if (gun.attackType === "farest"){
+            monsterToAttack = attackFarestMonster(gun);
+        }
         else{
-            monsterToAttack = null;
+            monsterToAttack = attackClosestMonster(gun);
         }
 
 
@@ -1106,16 +1123,15 @@ function update(){
             if (gun.counter >= gun.speed )
             {
                 gun.counter = 0;
-                gun.anchor.setTo(0.5, 0.5);
-                var bullet = bullets.create(gun.position.x - 5, gun.position.y - 5, 'bullets', 18);
+
+                var bullet = bullets.create(gun.position.x - 5, gun.position.y - 5, 'guns', gun.bulletImage);
                 bullet.scale.setTo(blockSize/50,blockSize/50);
-                // gun.type 12 ==> turret 2 upgrade 1 so 2*5*2= 20
-                // gun.type 01 ==> turret 2 upgrade 1 so 1*5*1= 5
-                // gun.type 51 ==> turret 2 upgrade 1 so 1*5*5= 25
+                bullet.anchor.setTo(0.5, 0.5);
                 bullet.damage = gun.damage;
-                bullet.alive = true;
                 bullet.lifespan = gun.bulletLife;
                 bullet.body.velocity = game.physics.arcade.velocityFromRotation(game.physics.arcade.angleBetween(monsterToAttack,gun)+Math.PI, gun.bulletSpeed);
+                bullet.body.rotation = gun.body.rotation;
+                bullet.towerType= gun.type;
                 pop.play();
             }
         }
