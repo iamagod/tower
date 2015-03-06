@@ -5,8 +5,8 @@ Tower Defence.
 game field is 100,100 x 750x650
 
 TODO:
-- add nicer range circle
 - add no money indicator
+- add json file for tower and monster settings
 - add half size to level
 - add small wall piece
 - create nice graphics
@@ -50,6 +50,7 @@ var towerPrice =[];
 var toBeRemoved = [];
 var bg;
 var blocked;
+var blurX, blurY;
 
 var resetState = false;
 var gameOverState = false;
@@ -292,6 +293,9 @@ function preload(){
     game.load.audio      ("pop"      , 'assets/pop.m4a'              );
     game.load.audio      ("splash"   , 'assets/splash.m4a'           );
     game.load.audio      ("build"    , 'assets/build.m4a'            );
+
+    game.load.script     ('blurX'    , 'filters/BlurX.js'            );
+    game.load.script     ('blurY'    , 'filters/BlurY.js'            );
 }
 
 function create(){
@@ -307,6 +311,10 @@ function create(){
     blocked = game.add.sprite(Math.round(width/3),Math.round(heigth/2),"blocked");
     blocked.scale.setTo(0.5 * blockSize/50,0.5 * blockSize/50);
     blocked.alpha = 0;
+
+
+	blurX = game.add.filter('BlurX');
+	blurY = game.add.filter('BlurY');
 
     for (x = 0;x < matrixSizeX;x++){
         for (y = 0;y < matrixSizeY;y++){
@@ -381,19 +389,11 @@ function create(){
     bullets = game.add.group();
     bullets.enableBody = true;
     game.input.onDown.add(click, self);
-/*
-    emitter = game.add.emitter(100, 100, 15000);
 
-    emitter.makeParticles('particle');
-    emitter.minParticleSpeed.setTo(-16 * blockSize, -16 * blockSize);
-    emitter.maxParticleSpeed.setTo(16 * blockSize, 16 * blockSize);
-    emitter.gravity = 50;
-    emitter.minParticleScale = 0.5;
-    emitter.maxParticleScale = 0.5;
-    emitter.on = false;
-*/
     timeBar = game.add.sprite(16 * blockSize, halfBlockSize, 'lifeBar');
     timeBar.scale.setTo(blockSize/50, blockSize/100);
+
+
 
 }
 
@@ -629,6 +629,10 @@ function click(event){
                     graphics.beginFill(0xffff00, 0.25);
                     towerRange = graphics.drawCircle(placeX + blockSize/2, placeY + blockSize/2,2 * gunArray[findInMatrix(gunArray,field)].range);
 
+                    towerRange.filters = [blurX, blurY];
+
+
+
                     if (upgradeActive){
                         upgrade.destroy();
                         upgrade = {};
@@ -734,8 +738,8 @@ function click(event){
                 graphics = game.add.graphics(0, 0);
                 graphics.lineStyle(0);
                 graphics.beginFill(0xffff00, 0.25);
-                towerRange = graphics.drawCircle(placeX + blockSize/2, placeY + blockSize/2,2 * gunTypes[type].range);
-
+                towerRange = graphics.drawCircle(placeX + blockSize/2, placeY + blockSize/2, 2 * gunTypes[type].range);
+                towerRange.filters = [blurX, blurY];
 
                 upgrade.destroy();
                 upgrade = {};
@@ -801,7 +805,6 @@ function click(event){
     }
 
 }
-
 
 function explode(pos,tint){
 
