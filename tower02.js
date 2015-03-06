@@ -277,11 +277,11 @@ function preload(){
     game.load.image      ('field'    , 'assets/field.png'            );
     game.load.spritesheet('guns'     , 'assets/guns.png'    ,50,50,20 );
     game.load.spritesheet('bullets'  , 'assets/bullets.png' ,10,10,5 );
-    game.load.spritesheet('monster01', 'assets/baddie01.png',50,50,4 );
-    game.load.spritesheet('monster02', 'assets/baddie02.png',50,50,4 );
-    game.load.spritesheet('monster03', 'assets/baddie03.png',50,50,4 );
-    game.load.spritesheet('monster04', 'assets/baddie04.png',50,50,4 );
-    game.load.spritesheet('monster05', 'assets/baddie05.png',50,50,4 );
+    game.load.spritesheet('monster01', 'assets/monster01.png',50,50,4 );
+    game.load.spritesheet('monster02', 'assets/monster02.png',50,50,4 );
+    game.load.spritesheet('monster03', 'assets/monster03.png',50,50,4 );
+    game.load.spritesheet('monster04', 'assets/monster04.png',50,50,4 );
+    game.load.spritesheet('monster05', 'assets/monster05.png',50,50,4 );
     game.load.spritesheet('particle' , 'assets/particle.png',50,50,4 );
     game.load.spritesheet('numbers'  , 'assets/numbers.png' ,40,50,10);
     game.load.image      ('reset'    , 'assets/reset.png'            );
