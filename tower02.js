@@ -5,23 +5,30 @@ Tower Defence.
 game field is 100,100 x 750x650
 
 TODO:
+
 - add no money indicator
+- add more monster versions
+- populate gun type in the right way.
+
 - add json file for tower and monster settings
+
+- you win pic
+
+- blur tower if to expensive
 - add half size to level
 - add small wall piece
 - create nice graphics
 - update sound
-- update tower types
-- add more monster versions
+
 - fix build in front of gate bug
-- populate gun type in the right way.
+
 - explode into new monsters
 */
 var w = window.innerWidth * window.devicePixelRatio,
     h = window.innerHeight * window.devicePixelRatio;
 console.log(w + " " +h);
 
-var blockSize = Math.floor(w/20);
+var blockSize = Math.floor((w-300)/20);
 
 var halfBlockSize = Math.floor(blockSize/2);
 
@@ -288,6 +295,7 @@ function preload(){
     game.load.image      ('gameover' , 'assets/game over.png'        );
     game.load.image      ('upgrade' , 'assets/upgrade.png'           );
     game.load.image      ('blocked'  , 'assets/blocked.png'          );
+    game.load.image      ('noMoney'  , 'assets/noMoney.png'          );
     game.load.image      ('lifeBar'  , 'assets/lifeBar.png'          );
 
     game.load.audio      ("pop"      , 'assets/pop.m4a'              );
@@ -312,6 +320,9 @@ function create(){
     blocked.scale.setTo(0.5 * blockSize/50,0.5 * blockSize/50);
     blocked.alpha = 0;
 
+    noMoney = game.add.sprite(Math.round(width/3),Math.round(heigth/2),"noMoney");
+    noMoney.scale.setTo(0.5 * blockSize/50,0.5 * blockSize/50);
+    noMoney.alpha = 0;
 
 	blurX = game.add.filter('BlurX');
 	blurY = game.add.filter('BlurY');
@@ -614,8 +625,8 @@ function click(event){
 
                 // Select tower for upgrade and show range
                 else if (fieldArray[field[0]][field[1]] !== 0){
-                    placeX = event.x - event.x % 50;
-                    placeY = event.y - event.y % 50;
+                    placeX = event.x - event.x % blockSize;
+                    placeY = event.y - event.y % blockSize;
                     //if (selectedInField){
                     //    selectedInField.destroy();
                     //}
@@ -642,10 +653,11 @@ function click(event){
                     }
                     upgradeActive = true;
                     upgrade = game.add.sprite(16 * blockSize, 7 * blockSize, 'upgrade');
-                    console.log("matrix value "+fieldArray[field[0]][field[1]]);
+                    upgrade.scale.setTo( blockSize/50, blockSize/50);
+                    //console.log("matrix value "+fieldArray[field[0]][field[1]]);
                     upgrade.selectedGunIndex = findInMatrix(gunArray,field);
 
-                    console.log("selected gun index "+findInMatrix(gunArray,field));
+                    //console.log("selected gun index "+findInMatrix(gunArray,field));
                     upgrade.selectedTowerBaseIndex = findInMatrix(towerBaseArray,field);
                     if (upgrade.selectedGunIndex !== -1 && upgrade.selectedTowerBaseIndex!== -1){
                         upgrade.newType = gunArray[upgrade.selectedGunIndex].type + 10;
@@ -671,6 +683,8 @@ function click(event){
                 }
                 else if (money < gunTypes[selectedTower].price){
                     console.log("No Money");
+                    noMoney.alpha = 0.8;
+                    game.world.bringToTop(noMoney);
                 }
             }
             // remove tower
@@ -709,6 +723,8 @@ function click(event){
                          event.y > 9 * blockSize && event.y < 10 * blockSize ){
             if (money < upgrade.price){
                 console.log("no Money");
+                noMoney.alpha = 0.8;
+                game.world.bringToTop(noMoney);
             }
             else{
                 money -= upgrade.price;
@@ -1277,6 +1293,14 @@ function update(){
     else{
         blocked.alpha = 0;
     }
+    // fade noMoney away
+    if (noMoney.alpha > 0.04){
+        noMoney.alpha -= 0.02;
+    }
+    else{
+        noMoney.alpha = 0;
+    }
+
 
     // fade particles
     count = 0;
