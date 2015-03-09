@@ -17,13 +17,9 @@ TODO:
 - add airplanes
 - remove upgrade if not selected
 - nomore updates
-- blur tower if to expensive
-- add half size to level
 - add small wall piece
 - create nice graphics
 - update sound
-
-- fix build in front of gate bug
 
 - explode into new monsters
 */
@@ -32,7 +28,7 @@ var w = window.innerWidth * window.devicePixelRatio,
 console.log(w + " " +h);
 
 var blockSize = Math.floor((w-300)/20);
-blockSize = 50;
+//blockSize = 50;
 
 var BS = blockSize;
 
@@ -381,7 +377,7 @@ function create(){
 
     //removeTower = items.create(16 * blockSize,6 * blockSize, 'guns',19);
     removeTower = items.create(0,0, 'guns',19);
-    removeTower.scale.setTo(blockSize/50,blockSize/50);
+    //removeTower.scale.setTo(blockSize/50,blockSize/50);
     towerBase[8].addChild(removeTower);
     //removeTower.inputEnabled = true;
     //removeTower.events.onInputDown.add(selectTower);
@@ -419,6 +415,15 @@ function dragStop(){
 
     selectedTower = i;
 
+    if (upgradeActive){
+        upgrade.destroy();
+        upgrade = {};
+        gunPrice100.destroy();
+        gunPrice10.destroy();
+        gunPrice1.destroy();
+        upgradeActive = false;
+    }
+
     if (posX >= 2 * blockSize && posX <= 15 * blockSize && posY >= 2 * blockSize && posY <= 13 * blockSize ){
         if (pauseState === false && resetState === false){
             field = convertReal2Matrix([posX,posY]);
@@ -437,27 +442,9 @@ function dragStop(){
                     temp[field[0]+1][field[1]] = 1;
                     temp[field[0]][field[1]+1] = 1;
                     temp[field[0]+1][field[1]+1] = 1;
-                    for (x=0;x<fieldArray.length;x++){
+                    /*for (x=0;x<fieldArray.length;x++){
                         console.log(temp[x].join()+":"+x);
-                    }
-                    // close the exit holes to prevend errors
-                    /*
-                    temp[6][0] = 1;
-                    temp[7][0] = 0;
-                    temp[8][0] = 1;
-
-                    temp[6][12] = 1;
-                    temp[7][12] = 0;
-                    temp[8][12] = 1;
-
-                    temp[0][5] = 1;
-                    temp[0][6] = 0;
-                    temp[0][7] = 1;
-
-                    temp[14][5] = 1;
-                    temp[14][6] = 0;
-                    temp[14][7] = 1;
-                    */
+                    }*/
                     checkTowerPos.pos = [field[0],field[1]];
                     checkTowerPos.towerType = selectedTower;
                     pathfinderUD.setGrid(swapGrid(temp), 0);
@@ -488,66 +475,7 @@ function dragStop(){
                     pathfinderUD.calculatePath();
 
                 }
-                /*
-                // Select tower for upgrade and show range
-                else if (fieldArray[field[0]][field[1]] !== 0){
-                    placeX = event.x - event.x % blockSize;
-                    placeY = event.y - event.y % blockSize;
-                    //if (selectedInField){
-                    //    selectedInField.destroy();
-                    //}
-                    if (towerRange){
-                        towerRange.destroy();
-                    }
-                    //selectedInField  = guns.create(placeX,placeY, 'guns',3);
-
-                    graphics = game.add.graphics(0, 0);
-                    graphics.lineStyle(0);
-                    graphics.beginFill(0xffff00, 0.25);
-                    towerRange = graphics.drawCircle(placeX + blockSize/2, placeY + blockSize/2,2 * gunArray[findInMatrix(gunArray,field)].range);
-
-                    towerRange.filters = [blurX, blurY];
-
-
-
-                    if (upgradeActive){
-                        upgrade.destroy();
-                        upgrade = {};
-                        gunPrice100.destroy();
-                        gunPrice10.destroy();
-                        gunPrice1.destroy();
-                    }
-                    upgradeActive = true;
-                    upgrade = game.add.sprite(16 * blockSize, 7 * blockSize, 'upgrade');
-                    upgrade.scale.setTo( blockSize/50, blockSize/50);
-                    //console.log("matrix value "+fieldArray[field[0]][field[1]]);
-                    upgrade.selectedGunIndex = findInMatrix(gunArray,field);
-
-                    //console.log("selected gun index "+findInMatrix(gunArray,field));
-                    upgrade.selectedTowerBaseIndex = findInMatrix(towerBaseArray,field);
-                    if (upgrade.selectedGunIndex !== -1 && upgrade.selectedTowerBaseIndex!== -1){
-                        upgrade.newType = gunArray[upgrade.selectedGunIndex].type + 10;
-
-                        if (upgrade.newType >= 60){
-                            upgrade.newType -= 10;
-                            upgrade.price = 0;
-                        }
-                        else{
-                            upgrade.price = gunTypes[upgrade.newType].price;
-                        }
-                    }
-                    else{
-                        console.log("index error");
-                    }
-
-                    gunPrice100 = numbers.create(18 * blockSize,8 * blockSize, 'numbers', Math.floor(upgrade.price / 100));
-                    gunPrice10 = numbers.create (18 * blockSize+ 1 * 0.35 * blockSize,8 * blockSize, 'numbers', Math.floor((upgrade.price % 100) / 10));
-                    gunPrice1 = numbers.create  (18 * blockSize+ 2 * 0.35 * blockSize, 8 * blockSize, 'numbers', upgrade.price % 10);
-                    gunPrice100.scale.setTo(blockSize/100,blockSize/100);
-                    gunPrice10.scale.setTo(blockSize/100,blockSize/100);
-                    gunPrice1.scale.setTo(blockSize/100,blockSize/100);
-                }*/
-                else if (money < gunTypes[selectedTower].price){
+            else if (money < gunTypes[selectedTower].price){
                     console.log("No Money");
                     noMoney.alpha = 0.8;
                     game.world.bringToTop(noMoney);
@@ -767,164 +695,92 @@ function findInMatrix(array, pos){
     }
 
 function click(event){
-    console.log("click at "+event.x+","+event.y +"\n client "+ event.clientX+","+event.clientY+"\n page "+ event.pageX+","+event.pageY+"\nscreen"+ event.screenX+","+event.screenY);
+    //console.log("click at "+event.x+","+event.y +"\n client "+ event.clientX+","+event.clientY+"\n page "+ event.pageX+","+event.pageY+"\nscreen"+ event.screenX+","+event.screenY);
 
     // Check if we click in field
 
-    if (event.x > 2 * blockSize && event.x < 15 * blockSize && event.y > 2 * blockSize && event.y < 13 * blockSize ){
-        if (pauseState === false && resetState === false){
-            field = convertReal2Matrix([event.x,event.y]);
-            // place a tower?
-            if (selectedTower <= 7 ){
-
-                if (fieldArray[field[0]][field[1]] === 0 && money >= gunTypes[selectedTower].price){
-                    /*
-                    temp = [];
-                    for (x=0;x<fieldArray.length;x++){
-                        temp.push(fieldArray[x].slice(0));
-                    }
-                    temp[field[0]][field[1]] = 1;
-                    // close the exit holes to prevend errors
-                    temp[6][0] = 1;
-                    temp[7][0] = 0;
-                    temp[8][0] = 1;
-
-                    temp[6][12] = 1;
-                    temp[7][12] = 0;
-                    temp[8][12] = 1;
-
-                    temp[0][5] = 1;
-                    temp[0][6] = 0;
-                    temp[0][7] = 1;
-
-                    temp[14][5] = 1;
-                    temp[14][6] = 0;
-                    temp[14][7] = 1;
-
-                    checkTowerPos.pos = [field[0],field[1]];
-                    checkTowerPos.towerType = selectedTower;
-                    pathfinderUD.setGrid(swapGrid(temp), 0);
-                    pathfinderUD.setCallbackFunction(function(path1){
-                        if (path1 !== null && path1.length !== 0){
-                            pathfinderLR.setGrid(swapGrid(temp), 0);
-                            pathfinderLR.setCallbackFunction(function(path2){
-                                if (path2 !== null && path2.length !== 0){
-                                    placeTower();
-                                    if (towerRange){
-                                        towerRange.destroy();
-                                    }
-                                }
-                                else{
-                                    blocked.alpha = 0.8;
-                                }
-                            });
-                            pathfinderLR.preparePathCalculation([0, 6], [14,6]);
-                            pathfinderLR.calculatePath();
-                        }
-                        else{
-                            blocked.alpha = 0.8;
-                        }
-                    });
-                    pathfinderUD.preparePathCalculation([7, 0], [7,12]);
-                    pathfinderUD.calculatePath();
-                    */
+    if (event.x > 2 * blockSize && event.x < 15 * blockSize && event.y > 2 * blockSize && event.y < 13 * blockSize &&
+        pauseState === false && resetState === false){
+        field = convertReal2Matrix([event.x,event.y]);
+        // Select tower for upgrade and show range
+        if (fieldArray[field[0]][field[1]] !== 0){
+            // detect click pos in block
+            if (fieldArray[field[0]][field[1]] === 99){
+                //##
+                //#*
+                if (fieldArray[field[0]-1][field[1]] === 99 && fieldArray[field[0]][field[1]-1] === 99 && fieldArray[field[0]-1][field[1]-1] !== 99){
+                    field[0] -= 1;
+                    field[1] -= 1;
+                }
+                //##
+                //*#
+                if (fieldArray[field[0]+1][field[1]] === 99 && fieldArray[field[0]+1][field[1]-1] === 99 && fieldArray[field[0]][field[1]-1] !== 99){
+                    //field[0] -= 1;
+                    field[1] -= 1;
+                }
+                //#*
+                //##
+                if (fieldArray[field[0]][field[1]+1] === 99 && fieldArray[field[0]-1][field[1]+1] === 99 && fieldArray[field[0]-1][field[1]] !== 99){
+                    field[0] -= 1;
+                    //field[1] -= 1;
                 }
 
-                // Select tower for upgrade and show range
-                else if (fieldArray[field[0]][field[1]] !== 0){
-                    placeX = event.x - event.x % blockSize;
-                    placeY = event.y - event.y % blockSize;
-                    //if (selectedInField){
-                    //    selectedInField.destroy();
-                    //}
-                    if (towerRange){
-                        towerRange.destroy();
-                    }
-                    //selectedInField  = guns.create(placeX,placeY, 'guns',3);
-
-                    graphics = game.add.graphics(0, 0);
-                    graphics.lineStyle(0);
-                    graphics.beginFill(0xffff00, 0.25);
-                    towerRange = graphics.drawCircle(placeX + blockSize/2, placeY + blockSize/2,2 * gunArray[findInMatrix(gunArray,field)].range);
-
-                    towerRange.filters = [blurX, blurY];
-
-
-
-                    if (upgradeActive){
-                        upgrade.destroy();
-                        upgrade = {};
-                        gunPrice100.destroy();
-                        gunPrice10.destroy();
-                        gunPrice1.destroy();
-                    }
-                    upgradeActive = true;
-                    upgrade = game.add.sprite(16 * blockSize, 7 * blockSize, 'upgrade');
-                    upgrade.scale.setTo( blockSize/50, blockSize/50);
-                    //console.log("matrix value "+fieldArray[field[0]][field[1]]);
-                    upgrade.selectedGunIndex = findInMatrix(gunArray,field);
-
-                    //console.log("selected gun index "+findInMatrix(gunArray,field));
-                    upgrade.selectedTowerBaseIndex = findInMatrix(towerBaseArray,field);
-                    if (upgrade.selectedGunIndex !== -1 && upgrade.selectedTowerBaseIndex!== -1){
-                        upgrade.newType = gunArray[upgrade.selectedGunIndex].type + 10;
-
-                        if (upgrade.newType >= 60){
-                            upgrade.newType -= 10;
-                            upgrade.price = 0;
-                        }
-                        else{
-                            upgrade.price = gunTypes[upgrade.newType].price;
-                        }
-                    }
-                    else{
-                        console.log("index error");
-                    }
-
-                    gunPrice100 = numbers.create(18 * blockSize,8 * blockSize, 'numbers', Math.floor(upgrade.price / 100));
-                    gunPrice10 = numbers.create (18 * blockSize+ 1 * 0.35 * blockSize,8 * blockSize, 'numbers', Math.floor((upgrade.price % 100) / 10));
-                    gunPrice1 = numbers.create  (18 * blockSize+ 2 * 0.35 * blockSize, 8 * blockSize, 'numbers', upgrade.price % 10);
-                    gunPrice100.scale.setTo(blockSize/100,blockSize/100);
-                    gunPrice10.scale.setTo(blockSize/100,blockSize/100);
-                    gunPrice1.scale.setTo(blockSize/100,blockSize/100);
-                }/*
-                else if (money < gunTypes[selectedTower].price){
-                    console.log("No Money");
-                    noMoney.alpha = 0.8;
-                    game.world.bringToTop(noMoney);
-                }*/
             }
-            // remove tower
-            if (selectedTower === 9 && fieldArray[field[0]][field[1]] !== 0){
-                // if not running free to remove.
-                if (running){
-                    money += Math.floor(gunTypes[fieldArray[field[0]][field[1]]].price/2);
+            placeX = convertMatrix2Real(field)[0];
+            placeY = convertMatrix2Real(field)[1];
+
+            if (towerRange){
+                towerRange.destroy();
+            }
+
+            graphics = game.add.graphics(0, 0);
+            graphics.lineStyle(0);
+            graphics.beginFill(0xffff00, 0.25);
+            towerRange = graphics.drawCircle(placeX + halfBlockSize, placeY + halfBlockSize, 2 * gunArray[findInMatrix(gunArray,field)].range);
+            towerRange.filters = [blurX, blurY];
+
+            if (upgradeActive){
+                upgrade.destroy();
+                upgrade = {};
+                gunPrice100.destroy();
+                gunPrice10.destroy();
+                gunPrice1.destroy();
+            }
+            upgradeActive = true;
+            upgrade = game.add.sprite(16 * blockSize, 7 * blockSize, 'upgrade');
+            upgrade.scale.setTo( blockSize/50, blockSize/50);
+            //console.log("matrix value "+fieldArray[field[0]][field[1]]);
+            upgrade.selectedGunIndex = findInMatrix(gunArray,field);
+
+            //console.log("selected gun index "+findInMatrix(gunArray,field));
+            upgrade.selectedTowerBaseIndex = findInMatrix(towerBaseArray,field);
+            if (upgrade.selectedGunIndex !== -1 && upgrade.selectedTowerBaseIndex!== -1){
+                upgrade.newType = gunArray[upgrade.selectedGunIndex].type + 10;
+
+                if (upgrade.newType >= 60){
+                    upgrade.newType -= 10;
+                    upgrade.price = 0;
                 }else{
-                    money += Math.floor(gunTypes[fieldArray[field[0]][field[1]]].price);
+                    upgrade.price = gunTypes[upgrade.newType].price;
                 }
-                changeMoney();
-                fieldArray[field[0]][field[1]] = 0;
-                monsters.forEachExists(function(monster){
-                    monster.needsUpdate = true;
-                });
-
-                index = findInMatrix(gunArray,field);
-                if (index !== -1){
-                    gunArray[index].destroy();
-                    gunArray.splice(index,1);
-                }
-
-                index = findInMatrix(towerBaseArray,field);
-                if (index !== -1){
-                    towerBaseArray[index].destroy();
-                    towerBaseArray.splice(index,1);
-                }
-                if (selectedInField){
-                    selectedInField.destroy();
-                }
-                if (towerRange){
-                    towerRange.destroy();
-                }
+            }else{
+                console.log("index error");
+            }
+            gunPrice100 = numbers.create(18 * blockSize,8 * blockSize, 'numbers', Math.floor(upgrade.price / 100));
+            gunPrice10 = numbers.create (18 * blockSize+ 1 * 0.35 * blockSize,8 * blockSize, 'numbers', Math.floor((upgrade.price % 100) / 10));
+            gunPrice1 = numbers.create  (18 * blockSize+ 2 * 0.35 * blockSize, 8 * blockSize, 'numbers', upgrade.price % 10);
+            gunPrice100.scale.setTo(blockSize/100,blockSize/100);
+            gunPrice10.scale.setTo(blockSize/100,blockSize/100);
+            gunPrice1.scale.setTo(blockSize/100,blockSize/100);
+        }
+        else if (fieldArray[field[0]][field[1]] === 0){
+            if (upgradeActive){
+                upgrade.destroy();
+                upgrade = {};
+                gunPrice100.destroy();
+                gunPrice10.destroy();
+                gunPrice1.destroy();
+                upgradeActive = false;
             }
         }
     }
@@ -1398,8 +1254,12 @@ function update(){
         // new wave
         if (currentMonster >= waves[currentWave].order.length){
             currentWave ++;
+            if (currentWave>=waves.length){
+                currentWave = 0;
+            }
             currentMonster = 0;
             timer  = waves[currentWave].betweenWavesTime;
+
         }
         if (currentWave >= waves.length){
             console.log("you won");
@@ -1459,16 +1319,16 @@ function update(){
             monX = Math.round(monster.body.position.x);
             monY = Math.round(monster.body.position.y);
             blockSizeCorrection = Math.round(blockSize/10);
-            console.log("Pos: "+monX+","+monY);
-            console.log("Velo: "+monster.body.velocity.x+","+monster.body.velocity.y);
-            console.log("X: "+Math.abs(goToRealX - monX)+" Y:"+Math.abs(goToRealY - monY));
+            //console.log("Pos: "+monX+","+monY);
+            //console.log("Velo: "+monster.body.velocity.x+","+monster.body.velocity.y);
+            //console.log("X: "+Math.abs(goToRealX - monX)+" Y:"+Math.abs(goToRealY - monY));
             if (Math.abs(goToRealX - monX) <= 3*blockSizeCorrection &&
                 Math.abs(goToRealY - monY) <= 3*blockSizeCorrection ||
                 monX <= 1.5 * blockSize - blockSizeCorrection ||
                 monY <= 1.5 * blockSize - blockSizeCorrection){
                 // monster has reached it's goto position.
                 //calculateNewPath(monster);
-                console.log("reached goto pos.");
+                //console.log("reached goto pos.");
                 if (monster.needsUpdate)
                 {
                     //console.log("New calculation!");
