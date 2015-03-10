@@ -8,15 +8,10 @@ TODO:
 - add more monster versions
 - populate gun type in the right way.
 
-- iphone size detect
-
-- wave number indicator
+- iphone size detect/retina size detect
 - lose life sound
 
-- you win pic
 - add airplanes
-- remove upgrade if not selected
-- nomore updates
 - add small wall piece
 - create nice graphics
 - update sound
@@ -54,7 +49,7 @@ var monsterArray = [];
 var bulletArray = [];
 var gunArray = [];
 var towerBaseArray =[];
-var money = 100;
+var money = 1000;
 var life = 20;
 var kill = 0;
 var towerPrice =[];
@@ -312,26 +307,26 @@ function create(){
     pathfinderLR = game.plugins.add(Phaser.Plugin.PathFinderPlugin);
 
     numbers = game.add.group();
-    lifeDigit100 = numbers.create(3 * blockSize + 0 * 0.7 * blockSize, 5, 'numbers',0); //150
-    lifeDigit10 = numbers.create(3 * blockSize + 1 * 0.7 * blockSize, 5, 'numbers',0); //185
-    lifeDigit1 = numbers.create(3 * blockSize + 2 * 0.7 * blockSize, 5, 'numbers',0); //220
+    lifeDigit100 = numbers.create(3 * blockSize + 0 * 0.7 * blockSize, Math.floor(blockSize/10), 'numbers',0); //150
+    lifeDigit10 = numbers.create(3 * blockSize + 1 * 0.7 * blockSize, Math.floor(blockSize/10), 'numbers',0); //185
+    lifeDigit1 = numbers.create(3 * blockSize + 2 * 0.7 * blockSize, Math.floor(blockSize/10), 'numbers',0); //220
     lifeDigit100.scale.setTo(blockSize/50,blockSize/50);
     lifeDigit10.scale.setTo(blockSize/50,blockSize/50);
     lifeDigit1.scale.setTo(blockSize/50,blockSize/50);
     changeLife(life);
 
-    killDigit100 = numbers.create(7 * blockSize + 0 * 0.7 * blockSize, 5, 'numbers',0);
-    killDigit10 = numbers.create(7 * blockSize + 1 * 0.7 * blockSize, 5, 'numbers',0);
-    killDigit1 = numbers.create(7 * blockSize + 2 * 0.7 * blockSize, 5, 'numbers',0);
+    killDigit100 = numbers.create(7 * blockSize + 0 * 0.7 * blockSize, Math.floor(blockSize/10), 'numbers',0);
+    killDigit10 = numbers.create(7 * blockSize + 1 * 0.7 * blockSize, Math.floor(blockSize/10), 'numbers',0);
+    killDigit1 = numbers.create(7 * blockSize + 2 * 0.7 * blockSize, Math.floor(blockSize/10), 'numbers',0);
     killDigit100.scale.setTo(blockSize/50,blockSize/50);
     killDigit10.scale.setTo(blockSize/50,blockSize/50);
     killDigit1.scale.setTo(blockSize/50,blockSize/50);
     changeKill(kill);
 
-    moneyDigit1000 = numbers.create(11 * blockSize + 0 * 0.7 * blockSize, 5, 'numbers',0);
-    moneyDigit100 = numbers.create(11 * blockSize + 1 * 0.7 * blockSize, 5, 'numbers',0);
-    moneyDigit10 = numbers.create(11 * blockSize + 2 * 0.7 * blockSize, 5, 'numbers',0);
-    moneyDigit1 = numbers.create(11 * blockSize + 3 * 0.7 * blockSize, 5, 'numbers',0);
+    moneyDigit1000 = numbers.create(11 * blockSize + 0 * 0.7 * blockSize, Math.floor(blockSize/10), 'numbers',0);
+    moneyDigit100 = numbers.create(11 * blockSize + 1 * 0.7 * blockSize, Math.floor(blockSize/10), 'numbers',0);
+    moneyDigit10 = numbers.create(11 * blockSize + 2 * 0.7 * blockSize, Math.floor(blockSize/10), 'numbers',0);
+    moneyDigit1 = numbers.create(11 * blockSize + 3 * 0.7 * blockSize, Math.floor(blockSize/10), 'numbers',0);
     moneyDigit1000.scale.setTo(blockSize/50,blockSize/50);
     moneyDigit100.scale.setTo(blockSize/50,blockSize/50);
     moneyDigit10.scale.setTo(blockSize/50,blockSize/50);
@@ -395,8 +390,15 @@ function create(){
     bullets.enableBody = true;
     game.input.onDown.add(click, self);
 
-    timeBar = game.add.sprite(16 * blockSize, halfBlockSize, 'lifeBar');
+    timeBar = game.add.sprite(16 * blockSize, blockSize, 'lifeBar');
     timeBar.scale.setTo(blockSize/50, blockSize/100);
+
+    levelDigit100 = numbers.create(17 * blockSize + 0.5 * 0.7 * blockSize, Math.floor(blockSize/10), 'numbers',0);
+    levelDigit10 = numbers.create(17 * blockSize + 1.5 * 0.7 * blockSize, Math.floor(blockSize/10), 'numbers',0);
+    levelDigit1 = numbers.create(17 * blockSize + 2.5 * 0.7 * blockSize, Math.floor(blockSize/10), 'numbers',0);
+    levelDigit100.scale.setTo(blockSize/50,blockSize/50);
+    levelDigit10.scale.setTo(blockSize/50,blockSize/50);
+    levelDigit1.scale.setTo(blockSize/50,blockSize/50);
 
 
 
@@ -553,6 +555,14 @@ function changeMoney(){
     moneyDigit100.frame = Math.floor((money%1000)/100);
     moneyDigit10.frame =  Math.floor((money%100) /10);
     moneyDigit1.frame = money%10;
+}
+
+function changeLevel(){
+    if ( currentWave > 1000) {currentWave = 999;}
+    else if (currentWave < 0) {currentWave =0;}
+    levelDigit100.frame = Math.floor((currentWave%1000)/100);
+    levelDigit10.frame =  Math.floor((currentWave%100) /10);
+    levelDigit1.frame = currentWave%10;
 }
 
 function printGrid(grid){
@@ -760,19 +770,27 @@ function click(event){
                 if (upgrade.newType >= 60){
                     upgrade.newType -= 10;
                     upgrade.price = 0;
+                    upgrade.destroy();
+                    //upgrade = {};
+                    gunPrice100.destroy();
+                    gunPrice10.destroy();
+                    gunPrice1.destroy();
+                    //upgradeActive = false;
                 }else{
                     upgrade.price = gunTypes[upgrade.newType].price;
+                    gunPrice100 = numbers.create(18 * blockSize,8 * blockSize, 'numbers', Math.floor(upgrade.price / 100));
+                    gunPrice10 = numbers.create (18 * blockSize+ 1 * 0.35 * blockSize,8 * blockSize, 'numbers', Math.floor((upgrade.price % 100) / 10));
+                    gunPrice1 = numbers.create  (18 * blockSize+ 2 * 0.35 * blockSize, 8 * blockSize, 'numbers', upgrade.price % 10);
+                    gunPrice100.scale.setTo(blockSize/100,blockSize/100);
+                    gunPrice10.scale.setTo(blockSize/100,blockSize/100);
+                    gunPrice1.scale.setTo(blockSize/100,blockSize/100);
                 }
             }else{
                 console.log("index error");
             }
-            gunPrice100 = numbers.create(18 * blockSize,8 * blockSize, 'numbers', Math.floor(upgrade.price / 100));
-            gunPrice10 = numbers.create (18 * blockSize+ 1 * 0.35 * blockSize,8 * blockSize, 'numbers', Math.floor((upgrade.price % 100) / 10));
-            gunPrice1 = numbers.create  (18 * blockSize+ 2 * 0.35 * blockSize, 8 * blockSize, 'numbers', upgrade.price % 10);
-            gunPrice100.scale.setTo(blockSize/100,blockSize/100);
-            gunPrice10.scale.setTo(blockSize/100,blockSize/100);
-            gunPrice1.scale.setTo(blockSize/100,blockSize/100);
+
         }
+        // remove range and update text
         else if (fieldArray[field[0]][field[1]] === 0){
             if (upgradeActive){
                 upgrade.destroy();
@@ -781,6 +799,9 @@ function click(event){
                 gunPrice10.destroy();
                 gunPrice1.destroy();
                 upgradeActive = false;
+            }
+            if (towerRange){
+                towerRange.destroy();
             }
         }
     }
@@ -812,9 +833,9 @@ function click(event){
                 createTower(realPos,matrixPos,type);
 
                 fieldArray[matrixPos[0]][matrixPos[1]] = gunTypes[type].matrixNumber;
-                fieldArray[matrixPos[0]+1][matrixPos[1]] = gunTypes[type].matrixNumber;
-                fieldArray[matrixPos[0]][matrixPos[1]+1] = gunTypes[type].matrixNumber;
-                fieldArray[matrixPos[0]+1][matrixPos[1]+1] = gunTypes[type].matrixNumber;
+                fieldArray[matrixPos[0]+1][matrixPos[1]] = 99;
+                fieldArray[matrixPos[0]][matrixPos[1]+1] = 99;
+                fieldArray[matrixPos[0]+1][matrixPos[1]+1] = 99;
                 // no need to update monster.
 
                 if (towerRange){
@@ -1109,6 +1130,7 @@ function resetGame(){
     //monsterArray = [];
     currentWave = 0;
     currentMonster = 0;
+    changeLevel()
 }
 
 function attackClosestMonster(gun){
@@ -1192,27 +1214,27 @@ function releaseMonster(){
         dir = "lr";
     }
     console.log("monsterstart pos: "+posX+","+posY);
-    monster = monsters.create(posX, posY , monsterTypes[waves[currentWave].order[currentMonster]].image);
+    monster = monsters.create(posX, posY , monsterTypes[waves[currentWave % waves.length].order[currentMonster]].image);
     monster.dir = dir;
     //monster.scale.setTo(blockSize/50,blockSize/50);
     monster.scale.setTo(blockSize/100,blockSize/100);
-    monster.speed = monsterTypes[waves[currentWave].order[currentMonster]].speed;
+    monster.speed = monsterTypes[waves[currentWave % waves.length].order[currentMonster]].speed;
     monster.body.velocity.x = velo[0];
     monster.body.velocity.y = velo[1];
     monster.anchor.setTo(0.5, 0.5);
     monster.animations.add('move', [0,1,2,3], 5, true);
     monster.animations.play('move');
-    monster.startHealth = monsterTypes[waves[currentWave].order[currentMonster]].life;
+    monster.startHealth = monsterTypes[waves[currentWave % waves.length].order[currentMonster]].life;
     monster.health = monster.startHealth;
     monster.goTo = convertReal2Matrix([monster.body.position.x,monster.body.position.y]);
     monster.alive = true;
-    monster.price = monsterTypes[waves[currentWave].order[currentMonster]].price;
+    monster.price = monsterTypes[waves[currentWave % waves.length].order[currentMonster]].price;
     monster.needsUpdate = true;
     monster.path = [monster.goTo];
     monster.newPathFound = false;
     monster.pathPos = 1;
     //color = Math.floor(Math.random() * 0xffffff);
-    monster.tint = monsterTypes[waves[currentWave].order[currentMonster]].color;
+    monster.tint = monsterTypes[waves[currentWave % waves.length].order[currentMonster]].color;
 
     monster.lifeBar = game.add.sprite(-halfBlockSize, -halfBlockSize, 'lifeBar');
     monster.lifeBar.scale.setTo(blockSize/200, blockSize/400);
@@ -1245,24 +1267,20 @@ function update(){
 
         if (currentMonster === 0){
             // timer in wave
-            timer = waves[currentWave].betweenMonstersTime;
+            timer = waves[currentWave % waves.length].betweenMonstersTime;
         }
 
         callbackFunction("",releaseMonster);
 
         currentMonster ++;
         // new wave
-        if (currentMonster >= waves[currentWave].order.length){
-            currentWave ++;
-            if (currentWave>=waves.length){
-                currentWave = 0;
-            }
-            currentMonster = 0;
-            timer  = waves[currentWave].betweenWavesTime;
+        if (currentMonster >= waves[currentWave % waves.length].order.length){
+            currentWave  ++;
 
-        }
-        if (currentWave >= waves.length){
-            console.log("you won");
+            changeLevel();
+            currentMonster = 0;
+            timer  = waves[currentWave % waves.length].betweenWavesTime;
+
         }
     }
 
