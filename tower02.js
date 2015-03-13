@@ -7,22 +7,37 @@ game field is 100,100 x 750x650
 TODO:
 - add more monster versions
 - populate gun type in the right way.
+- add airplanes
+- make game better balanced
+
+- make level more compact
+        -> towers in right edge
+        -> info in edge uppper and lower edge
+        -> play/pause button (maybe left)
+        -> gate animation?
+        -> upgrade?
+- add anticepating bullet
+- add heat seeking bullet
+
+- add more levels
 
 - iphone size detect/retina size detect
 - lose life sound
 
-- add airplanes
+
 - add small wall piece
 - create nice graphics
 - update sound
 
 - explode into new monsters
 */
-var w = window.innerWidth * window.devicePixelRatio,
-    h = window.innerHeight * window.devicePixelRatio;
+var w = window.innerWidth; //* window.devicePixelRatio,
+var h = window.innerHeight; //* window.devicePixelRatio;
 console.log(w + " " +h);
+console.log(window.devicePixelRatio+":"+window.innerWidth+","+window.innerHeight);
 
-var blockSize = Math.floor((w-300)/20);
+
+var blockSize = Math.floor((w*3/4)/20);
 //blockSize = 50;
 
 var BS = blockSize;
@@ -49,7 +64,7 @@ var monsterArray = [];
 var bulletArray = [];
 var gunArray = [];
 var towerBaseArray =[];
-var money = 1000;
+var money = 100;
 var life = 20;
 var kill = 0;
 var towerPrice =[];
@@ -57,6 +72,7 @@ var toBeRemoved = [];
 var bg;
 var blocked;
 var blurX, blurY;
+var bullet;
 
 var resetState = false;
 var gameOverState = false;
@@ -105,7 +121,7 @@ for (j=0;j<matrixSizeX;j++){
 
 var waves = [
     //max length of waves is 500
-    {order :[4],                                     betweenMonstersTime :20 ,betweenWavesTime: 500},
+    {order :[4,4,4,4,4],                                     betweenMonstersTime :20 ,betweenWavesTime: 500},
     {order :[5,5,5,5,5],                                     betweenMonstersTime :5 ,betweenWavesTime: 500},
     {order :[3,3,3,3,3],                                     betweenMonstersTime :10 ,betweenWavesTime: 500},
     {order :[4,4,4,4,4],                                     betweenMonstersTime :10 ,betweenWavesTime: 500},
@@ -117,6 +133,7 @@ var waves = [
     {order :[1,3,1,2,2,2,1,2,1,2,1,2],                       betweenMonstersTime :10 ,betweenWavesTime: 500},
     {order :[1,3,1,2,2,2,1,1,3,3,1,1,1,1],                   betweenMonstersTime :10 ,betweenWavesTime: 500},
     {order :[1,3,1,2,2,2,3,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2], betweenMonstersTime :10 ,betweenWavesTime: 500},
+    {order :[1,3,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,2,2,3,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2], betweenMonstersTime :10 ,betweenWavesTime: 500},
     ];
 
 var monsterTypes = [];
@@ -163,10 +180,10 @@ function setupGuns(){
     // gun 1 small gun
     gunTypes[0]  = {price : 5,   speed : 50, range : 2   * BS, attackType : "closest", damage : 10, bulletLife : 500,  bulletSpeed : 4   * BS, bulletImage :18};
     gunTypes[10] = {price : 10,  speed : 45, range : 2.1 * BS, attackType : "closest", damage : 12, bulletLife : 550,  bulletSpeed : 4.2 * BS,bulletImage :18};
-    gunTypes[20] = {price : 20,  speed : 50, range : 2.2 * BS, attackType : "closest", damage : 14, bulletLife : 600,  bulletSpeed : 4.4 * BS,bulletImage :18};
+    gunTypes[20] = {price : 20,  speed : 40, range : 2.2 * BS, attackType : "closest", damage : 14, bulletLife : 600,  bulletSpeed : 4.4 * BS,bulletImage :18};
     gunTypes[30] = {price : 40,  speed : 35, range : 2.3 * BS, attackType : "closest", damage : 16, bulletLife : 650,  bulletSpeed : 4.6 * BS,bulletImage :18};
     gunTypes[40] = {price : 80,  speed : 30, range : 2.4 * BS, attackType : "closest", damage : 18, bulletLife : 700,  bulletSpeed : 4.8 * BS,bulletImage :18};
-    gunTypes[50] = {price : 250, speed : 20, range : 3   * BS, attackType : "weakest", damage : 35, bulletLife : 1000, bulletSpeed : 6   * BS,bulletImage :18};
+    gunTypes[50] = {price : 250, speed : 13,  range : 5   * BS, attackType : "weakest", damage : 40, bulletLife : 1000, bulletSpeed : 6   * BS,bulletImage :18};
 
     // gun 2 dubble gun
     gunTypes[1]  = {price : 10,  speed : 20, range : 1.5 * BS, attackType : "closest", damage : 3,  bulletLife : 300,  bulletSpeed : 6   * BS,bulletImage :18};
@@ -192,7 +209,7 @@ function setupGuns(){
     gunTypes[43] = {price : 300, speed : 60, range : 4.4 * BS, attackType : "farest", damage : 50, bulletLife : 2500,  bulletSpeed : 4.8 * BS,bulletImage :16};
     gunTypes[53] = {price : 400, speed : 40, range : 5   * BS, attackType : "farest", damage : 70, bulletLife : 3000,  bulletSpeed : 6   * BS,bulletImage :16};
 
-    // gun 5
+    // gun 5 ???
     gunTypes[4]  = {price : 5,   speed : 50, range : 2   * BS, attackType : "closest", damage : 10, bulletLife : 500,  bulletSpeed : 4   * BS,bulletImage :18};
     gunTypes[14] = {price : 10,  speed : 45, range : 2.1 * BS, attackType : "closest", damage : 12, bulletLife : 550,  bulletSpeed : 4.2 * BS,bulletImage :18};
     gunTypes[24] = {price : 20,  speed : 50, range : 2.2 * BS, attackType : "closest", damage : 14, bulletLife : 600,  bulletSpeed : 4.4 * BS,bulletImage :18};
@@ -200,23 +217,23 @@ function setupGuns(){
     gunTypes[44] = {price : 80,  speed : 30, range : 2.4 * BS, attackType : "closest", damage : 18, bulletLife : 700,  bulletSpeed : 4.8 * BS,bulletImage :18};
     gunTypes[54] = {price : 250, speed : 20, range : 3   * BS, attackType : "weakest", damage : 35, bulletLife : 1000, bulletSpeed : 6   * BS,bulletImage :18};
 
-    // gun 6
-    gunTypes[5]  = {price : 5,   speed : 50, range : 2   * BS, attackType : "closest", damage : 10, bulletLife : 500,  bulletSpeed : 4   * BS,bulletImage :18};
-    gunTypes[15] = {price : 10,  speed : 45, range : 2.1 * BS, attackType : "closest", damage : 12, bulletLife : 550,  bulletSpeed : 4.2 * BS,bulletImage :18};
-    gunTypes[25] = {price : 20,  speed : 50, range : 2.2 * BS, attackType : "closest", damage : 14, bulletLife : 600,  bulletSpeed : 4.4 * BS,bulletImage :18};
-    gunTypes[35] = {price : 40,  speed : 35, range : 2.3 * BS, attackType : "closest", damage : 16, bulletLife : 650,  bulletSpeed : 4.6 * BS,bulletImage :18};
-    gunTypes[45] = {price : 80,  speed : 30, range : 2.4 * BS, attackType : "closest", damage : 18, bulletLife : 700,  bulletSpeed : 4.8 * BS,bulletImage :18};
-    gunTypes[55] = {price : 250, speed : 20, range : 3   * BS, attackType : "weakest", damage : 35, bulletLife : 1000, bulletSpeed : 6   * BS,bulletImage :18};
+    // gun 6 four guns
+    gunTypes[5]  = {price : 20,  speed : 50, range : 2   * BS, attackType : "closest", damage : 10, bulletLife : 500,  bulletSpeed : 4   * BS,bulletImage :18};
+    gunTypes[15] = {price : 40,  speed : 45, range : 2.1 * BS, attackType : "closest", damage : 12, bulletLife : 550,  bulletSpeed : 4.2 * BS,bulletImage :18};
+    gunTypes[25] = {price : 80,  speed : 50, range : 2.2 * BS, attackType : "closest", damage : 14, bulletLife : 600,  bulletSpeed : 4.4 * BS,bulletImage :18};
+    gunTypes[35] = {price : 160, speed : 35, range : 2.3 * BS, attackType : "closest", damage : 16, bulletLife : 650,  bulletSpeed : 4.6 * BS,bulletImage :18};
+    gunTypes[45] = {price : 320, speed : 30, range : 2.4 * BS, attackType : "closest", damage : 18, bulletLife : 700,  bulletSpeed : 4.8 * BS,bulletImage :18};
+    gunTypes[55] = {price : 640, speed : 20, range : 5   * BS, attackType : "weakest", damage : 35, bulletLife : 1000, bulletSpeed : 6   * BS,bulletImage :18};
 
-    // gun 7
-    gunTypes[6]  = {price : 5,   speed : 50, range : 2   * BS, attackType : "closest", damage : 10, bulletLife : 500,  bulletSpeed : 4   * BS,bulletImage :18};
-    gunTypes[16] = {price : 10,  speed : 45, range : 2.1 * BS, attackType : "closest", damage : 12, bulletLife : 550,  bulletSpeed : 4.2 * BS,bulletImage :18};
-    gunTypes[26] = {price : 20,  speed : 50, range : 2.2 * BS, attackType : "closest", damage : 14, bulletLife : 600,  bulletSpeed : 4.4 * BS,bulletImage :18};
-    gunTypes[36] = {price : 40,  speed : 35, range : 2.3 * BS, attackType : "closest", damage : 16, bulletLife : 650,  bulletSpeed : 4.6 * BS,bulletImage :18};
-    gunTypes[46] = {price : 80,  speed : 30, range : 2.4 * BS, attackType : "closest", damage : 18, bulletLife : 700,  bulletSpeed : 4.8 * BS,bulletImage :18};
-    gunTypes[56] = {price : 250, speed : 20, range : 3   * BS, attackType : "weakest", damage : 35, bulletLife : 1000, bulletSpeed : 6   * BS,bulletImage :18};
+    // gun 7 slow tower
+    gunTypes[6]  = {price : 25,  speed : 100,range : 3   * BS, attackType : "farest", damage : 0, bulletLife : 500,  bulletSpeed : 4   * BS,bulletImage :15};
+    gunTypes[16] = {price : 35,  speed : 90, range : 3.1 * BS, attackType : "farest", damage : 0, bulletLife : 550,  bulletSpeed : 4.2 * BS,bulletImage :15};
+    gunTypes[26] = {price : 50,  speed : 80, range : 3.2 * BS, attackType : "farest", damage : 0, bulletLife : 600,  bulletSpeed : 4.4 * BS,bulletImage :15};
+    gunTypes[36] = {price : 75,  speed : 70, range : 3.3 * BS, attackType : "farest", damage : 0, bulletLife : 650,  bulletSpeed : 4.6 * BS,bulletImage :15};
+    gunTypes[46] = {price : 100, speed : 60, range : 3.4 * BS, attackType : "farest", damage : 0, bulletLife : 700,  bulletSpeed : 4.8 * BS,bulletImage :15};
+    gunTypes[56] = {price : 200, speed : 30, range : 4.5 * BS, attackType : "farest", damage : 0, bulletLife : 1000, bulletSpeed : 6   * BS,bulletImage :15};
 
-    // gun 8
+    // gun 8 anti air
     gunTypes[7]  = {price : 5,   speed : 50, range : 2   * BS, attackType : "closest", damage : 10, bulletLife : 500,  bulletSpeed : 4   * BS,bulletImage :18};
     gunTypes[17] = {price : 10,  speed : 45, range : 2.1 * BS, attackType : "closest", damage : 12, bulletLife : 550,  bulletSpeed : 4.2 * BS,bulletImage :18};
     gunTypes[27] = {price : 20,  speed : 50, range : 2.2 * BS, attackType : "closest", damage : 14, bulletLife : 600,  bulletSpeed : 4.4 * BS,bulletImage :18};
@@ -486,8 +503,7 @@ function dragStop(){
 
             // remove tower
             if (selectedTower === 8 &&
-                 fieldArray[field[0]][field[1]] !== 0
-                 &&
+                 fieldArray[field[0]][field[1]] !== 0 &&
                  fieldArray[field[0]+1][field[1]] === 99 &&
                  fieldArray[field[0]][field[1]+1] === 99 &&
                  fieldArray[field[0]+1][field[1]+1] === 99
@@ -955,24 +971,7 @@ function bulletHit(bullet,monster){
     // sonic hit
     if (bullet.towerType % 10 === 2){
         towerLevel = Math.floor(bullet.towerType/10);
-        if  (towerLevel === 0){
-            monster.health = Math.floor(monster.health/7);
-        }
-        else if (towerLevel === 1){
-            monster.health = Math.floor(monster.health/6);
-        }
-        else if (towerLevel === 2){
-            monster.health = Math.floor(monster.health/5);
-        }
-        else if (towerLevel === 3){
-            monster.health = Math.floor(monster.health/4);
-        }
-        else if (towerLevel === 4){
-            monster.health = Math.floor(monster.health/3);
-        }
-        else if (towerLevel === 5){
-            monster.health = Math.floor(monster.health/2);
-        }
+        monster.health = Math.floor((6-towerLevel)*monster.health/(7-towerLevel));
     }
     // rocket hit
     else if (bullet.towerType % 10 === 3){
@@ -1003,6 +1002,14 @@ function bulletHit(bullet,monster){
             }
         });
         monster.health -= bullet.damage;
+    }
+    // slow tower
+    else if (bullet.towerType % 10 === 6){
+        // change monster speed.
+
+        towerLevel = Math.floor(bullet.towerType/10);
+        monster.speed = Math.floor((6-towerLevel)*monster.speed/(7 - towerLevel));
+        //console.log(monster.speed);
     }
     else{
         monster.health -= bullet.damage;
@@ -1130,7 +1137,7 @@ function resetGame(){
     //monsterArray = [];
     currentWave = 0;
     currentMonster = 0;
-    changeLevel()
+    changeLevel();
 }
 
 function attackClosestMonster(gun){
@@ -1307,11 +1314,9 @@ function update(){
 
         if (monsterToAttack){
             gun.body.rotation = game.physics.arcade.angleBetween(monsterToAttack,gun)* 180 / Math.PI + 180+90;
-            if (gun.counter >= gun.speed )
-            {
+            if (gun.counter >= gun.speed ){
                 gun.counter = 0;
-
-                var bullet = bullets.create(gun.position.x - 5, gun.position.y - 5, 'guns', gun.bulletImage);
+                bullet = bullets.create(gun.position.x - 5, gun.position.y - 5, 'guns', gun.bulletImage);
                 bullet.scale.setTo(blockSize/50,blockSize/50);
                 bullet.anchor.setTo(0.5, 0.5);
                 bullet.damage = gun.damage;
@@ -1320,6 +1325,21 @@ function update(){
                 bullet.body.rotation = gun.body.rotation;
                 bullet.towerType= gun.type;
                 pop.play();
+
+                // four shooter tower
+                if (gun.type % 10 === 5){
+                    for (i = 0;i < 3;i++){
+                        bullet = bullets.create(gun.position.x - 5, gun.position.y - 5, 'guns', gun.bulletImage);
+                        bullet.scale.setTo(blockSize/50,blockSize/50);
+                        bullet.anchor.setTo(0.5, 0.5);
+                        bullet.damage = gun.damage;
+                        bullet.lifespan = gun.bulletLife;
+                        bullet.body.velocity = game.physics.arcade.velocityFromRotation(game.physics.arcade.angleBetween(monsterToAttack,gun)+Math.PI + (i+1)*2*Math.PI/4, gun.bulletSpeed);
+                        bullet.body.rotation = gun.body.rotation;
+                        bullet.towerType = gun.type;
+
+                    }
+                }
             }
         }
     });
@@ -1360,15 +1380,15 @@ function update(){
                     monster.pathPos++;
                     if (monster.pathPos >= monster.path.length){
                         monster.pathPos = monster.path.length - 1;
-                        console.log("Monster goto at end of length.");
+                        //console.log("Monster goto at end of length.");
                     }
                     //monster.newPathFound = false;
-                    console.log(monster.pathPos+":"+monster.path[monster.pathPos]+" goto: "+monster.goTo[0]+","+monster.goTo[1]+" field: "+ goToRealX+","+goToRealY);
+                    //console.log(monster.pathPos+":"+monster.path[monster.pathPos]+" goto: "+monster.goTo[0]+","+monster.goTo[1]+" field: "+ goToRealX+","+goToRealY);
                     monster.goTo[0] = monster.path[monster.pathPos][0];
                     monster.goTo[1] = monster.path[monster.pathPos][1];
                     goToRealX = convertMatrix2Real(monster.goTo)[0];
                     goToRealY = convertMatrix2Real(monster.goTo)[1];
-                    console.log(monster.pathPos+":"+monster.path[monster.pathPos]+" goto: "+monster.goTo[0]+","+monster.goTo[1]+" field: "+ goToRealX+","+goToRealY);
+                    //console.log(monster.pathPos+":"+monster.path[monster.pathPos]+" goto: "+monster.goTo[0]+","+monster.goTo[1]+" field: "+ goToRealX+","+goToRealY);
 
                 }
             }
@@ -1399,7 +1419,7 @@ function update(){
                     monster.body.velocity.x = 0;
                 }
                 else if (goToRealY < monY){
-                    monster.body.velocity.y = -monster.speed +halfBlockSize;
+                    monster.body.velocity.y = -monster.speed + halfBlockSize;
                     monster.body.velocity.x = 0;
                 }
                 else{
@@ -1410,11 +1430,11 @@ function update(){
                         monster.body.velocity.y = 0;
                     }
                     else if (goToRealX < monX){
-                        monster.body.velocity.x = -monster.speed+halfBlockSize;
+                        monster.body.velocity.x = -monster.speed + halfBlockSize;
                         monster.body.velocity.y = 0;
                     }
                     else{
-                        console.log("velo 0! in Y");
+                        //console.log("velo 0! in Y");
                         if (monster.dir === "lr"){
                             monster.body.velocity.x = 10;
                             monster.body.velocity.y = 0;
@@ -1437,22 +1457,22 @@ function update(){
                     monster.body.velocity.y = 0;
                 }
                 else if (goToRealX < monX){
-                    monster.body.velocity.x = -monster.speed+halfBlockSize;
+                    monster.body.velocity.x = -monster.speed + halfBlockSize;
                     monster.body.velocity.y = 0;
                 }
                 else{
                     // fieldX === monX
-                    console.log("fieldX === monX");
+                    // console.log("fieldX === monX");
                     if (goToRealY > monY){
                         monster.body.velocity.y = monster.speed;
                         monster.body.velocity.x = 0;
                     }
                     else if (goToRealY < monY){
-                        monster.body.velocity.y = -monster.speed+halfBlockSize;
+                        monster.body.velocity.y = -monster.speed + halfBlockSize;
                         monster.body.velocity.x = 0;
                     }
                     else{
-                        console.log("velo 0! in X");
+                        // console.log("velo 0! in X");
                         monster.body.velocity.x = 0;
                         monster.body.velocity.y = 0;
                     }
