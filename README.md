@@ -1,2 +1,27 @@
-tower
-My first javascript game. A tower defence.
+My first javascript game. A tower defense game.
+
+TODO:
+- add more monster versions
+- populate gun type in the right way.
+- make game better balanced
+
+- add three path and choose shortest
+
+- make level more compact
+        -> towers in right edge
+        -> info in edge uppper and lower edge
+        -> play/pause button (maybe left)
+        -> gate animation?
+        -> upgrade?
+- add anticepating bullet
+- add heat seeking bullet
+
+- add more levels
+
+- iphone size detect/retina size detect
+- lose life sound
+- add small wall piece
+- create nice graphics
+- update sound
+
+- explode into new monsters

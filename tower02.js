@@ -1,35 +1,7 @@
 /*
 Tower Defence.
-
 11x13 game field
 game field is 100,100 x 750x650
-
-TODO:
-- add more monster versions
-- populate gun type in the right way.
-- add airplanes
-- make game better balanced
-
-- make level more compact
-        -> towers in right edge
-        -> info in edge uppper and lower edge
-        -> play/pause button (maybe left)
-        -> gate animation?
-        -> upgrade?
-- add anticepating bullet
-- add heat seeking bullet
-
-- add more levels
-
-- iphone size detect/retina size detect
-- lose life sound
-
-
-- add small wall piece
-- create nice graphics
-- update sound
-
-- explode into new monsters
 */
 var w = window.innerWidth; //* window.devicePixelRatio,
 var h = window.innerHeight; //* window.devicePixelRatio;
@@ -53,42 +25,29 @@ var width = 20 * blockSize; //1000
 var heigth = 14 * blockSize; //700
 var game = new Phaser.Game(width, heigth, Phaser.AUTO, '', { preload: preload, create: create, update: update });
 
+var numbers, selectedTower, selected, selectedInField, bg, blocked, blurX, blurY, bullet, gameOver, bar, timerBar, emitter,towerRange, graphics;
+
 var towerBase = [];
 var gun = [];
-var numbers;
-var selectedTower;
-var selected;
-var selectedInField;
-var running = false;
 var monsterArray = [];
 var bulletArray = [];
 var gunArray = [];
 var towerBaseArray =[];
+var towerPrice =[];
+var toBeRemoved = [];
+var running = false;
+var resetState = false;
+var gameOverState = false;
+var pauseState = false;
+var upgradeActive = false;
+var timer = 180;
+var counter = 1000;
 var money = 100;
 var life = 20;
 var kill = 0;
-var towerPrice =[];
-var toBeRemoved = [];
-var bg;
-var blocked;
-var blurX, blurY;
-var bullet;
-
-var resetState = false;
-var gameOverState = false;
-var gameOver;
-var pauseState = false;
 var counter = 0;
-var graphics;
 var currentWave = 0;
 var currentMonster = 0;
-var timer = 180;
-var counter = 1000;
-var towerRange;
-var bar;
-var timerBar;
-var emitter;
-var upgradeActive = false;
 
 // watch out it is mirrored!
 // 15x13
@@ -108,7 +67,6 @@ var matrix = [
      1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,//11
      1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1];//12
 
-
 var fieldArray = [];
 
 //console.log(fill.join());
@@ -121,6 +79,7 @@ for (j=0;j<matrixSizeX;j++){
 
 var waves = [
     //max length of waves is 500
+    {order :[6,6,4,4,4],                                     betweenMonstersTime :20 ,betweenWavesTime: 500},
     {order :[4,4,4,4,4],                                     betweenMonstersTime :20 ,betweenWavesTime: 500},
     {order :[5,5,5,5,5],                                     betweenMonstersTime :5 ,betweenWavesTime: 500},
     {order :[3,3,3,3,3],                                     betweenMonstersTime :10 ,betweenWavesTime: 500},
@@ -128,6 +87,7 @@ var waves = [
     {order :[1,1,1,1,1],                                     betweenMonstersTime :40 ,betweenWavesTime: 500},
     {order :[1,2,1,2,1],                                     betweenMonstersTime :10 ,betweenWavesTime: 500},
     {order :[1,1,1,2,2,2],                                   betweenMonstersTime :10 ,betweenWavesTime: 500},
+    {order :[6,6,6,6,6,6,6],                                 betweenMonstersTime :10 ,betweenWavesTime: 500},
     {order :[3,3,3,2,2,2],                                   betweenMonstersTime :10 ,betweenWavesTime: 500},
     {order :[1,3,1,2,2,2,1,2],                               betweenMonstersTime :10 ,betweenWavesTime: 500},
     {order :[1,3,1,2,2,2,1,2,1,2,1,2],                       betweenMonstersTime :10 ,betweenWavesTime: 500},
@@ -138,6 +98,7 @@ var waves = [
 
 var monsterTypes = [];
 monsterTypes[1] = {
+    // rolling pin
     life : 200,
     speed : 2.5 * blockSize,
     image : "monster01",
@@ -145,6 +106,7 @@ monsterTypes[1] = {
     color : 0xff0000,
 };
 monsterTypes[2] = {
+    // ghost
     life : 100,
     speed : 1.5 * blockSize,
     image : "monster02",
@@ -152,6 +114,7 @@ monsterTypes[2] = {
     color : 0x00ff00,
 };
 monsterTypes[3] = {
+    // walking face
     life : 150,
     speed : 2.5 * blockSize,
     image : "monster03",
@@ -159,6 +122,7 @@ monsterTypes[3] = {
     color : 0x0000ff,
 };
 monsterTypes[4] = {
+    // dart
     life : 25,
     speed : 4.75 * blockSize,
     image : "monster04",
@@ -166,12 +130,22 @@ monsterTypes[4] = {
     color : 0xff00ff,
 };
 monsterTypes[5] = {
+    // mandarin
     life : 50,
     speed : 1.5 * blockSize,
     image : "monster05",
     price : 5,
     color : 0xff00ff,
 };
+monsterTypes[6] = {
+    // airplane
+    life : 200,
+    speed : 3 * blockSize,
+    image : "monster06",
+    price : 5,
+    color : 0xff00ff,
+};
+
 
 var gunTypes = [];
 
@@ -266,8 +240,9 @@ function preload(){
     game.load.spritesheet('monster01', 'assets/monster01.png',50,50,4 );
     game.load.spritesheet('monster02', 'assets/monster02.png',50,50,4 );
     game.load.spritesheet('monster03', 'assets/monster03.png',50,50,4 );
-    game.load.spritesheet('monster04', 'assets/monster04.png',50,50,4 );
+    game.load.spritesheet('monster04', 'assets/monster04.png',50,50,8 );
     game.load.spritesheet('monster05', 'assets/monster05.png',50,50,4 );
+    game.load.spritesheet('monster06', 'assets/monster06.png',50,50,4 );
     game.load.spritesheet('particle' , 'assets/particle.png',50,50,4 );
     game.load.spritesheet('numbers'  , 'assets/numbers.png' ,40,50,10);
     game.load.image      ('reset'    , 'assets/reset.png'            );
@@ -1205,32 +1180,64 @@ function callbackFunction(variable,callback){
 }
 
 function releaseMonster(){
-
+    add = Math.floor(Math.random()*3) - 1;
     if (Math.floor(Math.random()*10) % 2 === 0){
         // up down
-        posX = convertMatrix2Real([14,0])[0];
-        posY = convertMatrix2Real([14,0])[1];
+        posX = convertMatrix2Real([14 + add,0])[0];
+        posY = convertMatrix2Real([14 + add,0])[1];
         velo = [0,10];
         dir = "ud";
     }
     else{
         //left right
-        posX = convertMatrix2Real([0,12])[0];
-        posY = convertMatrix2Real([0,12])[1];
+        posX = convertMatrix2Real([0,12 + add])[0];
+        posY = convertMatrix2Real([0,12 + add])[1];
         velo = [10,0];
         dir = "lr";
     }
-    console.log("monsterstart pos: "+posX+","+posY);
-    monster = monsters.create(posX, posY , monsterTypes[waves[currentWave % waves.length].order[currentMonster]].image);
+    //console.log("monsterstart pos: "+posX+","+posY);
+    type = waves[currentWave % waves.length].order[currentMonster];
+    monster = monsters.create(posX, posY , monsterTypes[type].image);
     monster.dir = dir;
+    monster.type = type;
     //monster.scale.setTo(blockSize/50,blockSize/50);
     monster.scale.setTo(blockSize/100,blockSize/100);
-    monster.speed = monsterTypes[waves[currentWave % waves.length].order[currentMonster]].speed;
+    monster.speed = monsterTypes[monster.type].speed;
     monster.body.velocity.x = velo[0];
     monster.body.velocity.y = velo[1];
     monster.anchor.setTo(0.5, 0.5);
-    monster.animations.add('move', [0,1,2,3], 5, true);
-    monster.animations.play('move');
+    if (monster.type === 4){
+        monster.animations.add('down', [0,1], 5, true);
+        monster.animations.play('down');
+        monster.animations.add('up', [2,3], 5, true);
+        monster.animations.play('up');
+        monster.animations.add('right', [4,5], 5, true);
+        monster.animations.play('right');
+        monster.animations.add('left', [6,7], 5, true);
+        monster.animations.play('left');
+    }else if (monster.type === 6){
+        // airplane
+        monster.animations.add('down', [0], 5, true);
+        monster.animations.play('down');
+        monster.animations.add('up', [1], 5, true);
+        monster.animations.play('up');
+        monster.animations.add('right', [2], 5, true);
+        monster.animations.play('right');
+        monster.animations.add('left', [3], 5, true);
+        monster.animations.play('left');
+        if (monster.dir === "ud"){
+            monster.body.velocity.x = 0;
+            monster.body.velocity.y = monster.speed;
+            monster.animations.play('down');
+        }else{
+            monster.body.velocity.x = monster.speed;
+            monster.body.velocity.y = 0;
+            monster.animations.play('right');
+        }
+    }else{
+        monster.animations.add('move', [0,1,2,3], 5, true);
+        monster.animations.play('move');
+    }
     monster.startHealth = monsterTypes[waves[currentWave % waves.length].order[currentMonster]].life;
     monster.health = monster.startHealth;
     monster.goTo = convertReal2Matrix([monster.body.position.x,monster.body.position.y]);
@@ -1348,15 +1355,15 @@ function update(){
     monsters.forEach(function(monster){
         //monster.body.velocity.y = 0;
         //monster.body.velocity.x = monster.speed;
+        blockSizeCorrection = Math.round(blockSize/10);
 
-
-        if (monster !== undefined){
+        if (monster !== undefined && (monster.type !== 6)){
             goToRealX = convertMatrix2Real(monster.goTo)[0];
             goToRealY = convertMatrix2Real(monster.goTo)[1];
 
             monX = Math.round(monster.body.position.x);
             monY = Math.round(monster.body.position.y);
-            blockSizeCorrection = Math.round(blockSize/10);
+
             //console.log("Pos: "+monX+","+monY);
             //console.log("Velo: "+monster.body.velocity.x+","+monster.body.velocity.y);
             //console.log("X: "+Math.abs(goToRealX - monX)+" Y:"+Math.abs(goToRealY - monY));
@@ -1417,10 +1424,20 @@ function update(){
                 if (goToRealY > monY){
                     monster.body.velocity.y = monster.speed;
                     monster.body.velocity.x = 0;
+                    if (monster.type === 4 || monster.type === 6){
+                        monster.animations.play('down');
+                    }else{
+                        monster.animations.play('move');
+                    }
                 }
                 else if (goToRealY < monY){
                     monster.body.velocity.y = -monster.speed + halfBlockSize;
                     monster.body.velocity.x = 0;
+                    if (monster.type === 4 || monster.type === 6){
+                        monster.animations.play('up');
+                    }else{
+                        monster.animations.play('move');
+                    }
                 }
                 else{
                     //fieldY === monY
@@ -1428,10 +1445,20 @@ function update(){
                     if (goToRealX > monX){
                         monster.body.velocity.x = monster.speed;
                         monster.body.velocity.y = 0;
+                        if (monster.type === 4 || monster.type === 6){
+                            monster.animations.play('right');
+                        }else{
+                            monster.animations.play('move');
+                        }
                     }
                     else if (goToRealX < monX){
                         monster.body.velocity.x = -monster.speed + halfBlockSize;
                         monster.body.velocity.y = 0;
+                        if (monster.type === 4 || monster.type === 6){
+                            monster.animations.play('left');
+                        }else{
+                            monster.animations.play('move');
+                        }
                     }
                     else{
                         //console.log("velo 0! in Y");
@@ -1439,10 +1466,20 @@ function update(){
                             monster.body.velocity.x = 10;
                             monster.body.velocity.y = 0;
                             monster.needsUpdate = true;
+                            if (monster.type === 4 || monster.type === 6){
+                                monster.animations.play('left');
+                            }else{
+                                monster.animations.play('move');
+                            }
                         }else{
                             monster.body.velocity.x = 0;
                             monster.body.velocity.y = 10;
                             monster.needsUpdate = true;
+                            if (monster.type === 4 || monster.type === 6){
+                                monster.animations.play('up');
+                            }else{
+                                monster.animations.play('move');
+                            }
                         }
 
                     }
@@ -1455,10 +1492,20 @@ function update(){
                 if (goToRealX > monX){
                     monster.body.velocity.x = monster.speed;
                     monster.body.velocity.y = 0;
+                    if (monster.type === 4 || monster.type === 6){
+                        monster.animations.play('right');
+                    }else{
+                        monster.animations.play('move');
+                    }
                 }
                 else if (goToRealX < monX){
                     monster.body.velocity.x = -monster.speed + halfBlockSize;
                     monster.body.velocity.y = 0;
+                    if (monster.type === 4 || monster.type === 6){
+                        monster.animations.play('left');
+                    }else{
+                        monster.animations.play('move');
+                    }
                 }
                 else{
                     // fieldX === monX
@@ -1466,10 +1513,20 @@ function update(){
                     if (goToRealY > monY){
                         monster.body.velocity.y = monster.speed;
                         monster.body.velocity.x = 0;
+                        if (monster.type === 4 || monster.type === 6){
+                            monster.animations.play('down');
+                        }else{
+                            monster.animations.play('move');
+                        }
                     }
                     else if (goToRealY < monY){
                         monster.body.velocity.y = -monster.speed + halfBlockSize;
                         monster.body.velocity.x = 0;
+                        if (monster.type === 4 || monster.type === 6){
+                            monster.animations.play('up');
+                        }else{
+                            monster.animations.play('move');
+                        }
                     }
                     else{
                         // console.log("velo 0! in X");
@@ -1480,25 +1537,23 @@ function update(){
                 //console.log("Velo: "+monster.body.velocity.x +","+monster.body.velocity.y );
             }
             //console.log("monster pos: "+currentFieldX+" "+currentFieldY)
-
+        }
             // They made it!
-            if (monster.body.position.x >= (matrixSizeX * blockSize/2) - blockSizeCorrection ||
-                monster.body.position.y >= (matrixSizeY * blockSize/2) - blockSizeCorrection ){
-                monsters.remove(monster,true);
-                //monster.alive = false;
-                life--;
-                changeLife();
-                if (life <= 0)
-                {
-                    //Game Over!
-                    gameOver = game.add.sprite(Math.round(width/4), Math.round(heigth/4), 'gameover');
-                    gameOver.scale.setTo(blockSize/50,blockSize/50);
-                    if (game.paused === false) {game.paused = true;}
-                    reset = game.add.sprite(width/4, heigth/2, 'reset');
-                    resetState = true;
-                    gameOverState = true;
-                }
-
+        if (monster !== undefined && (monster.body.position.x >= (matrixSizeX * blockSize/2) - blockSizeCorrection ||
+            monster.body.position.y >= (matrixSizeY * blockSize/2) - blockSizeCorrection )){
+            monsters.remove(monster,true);
+            //monster.alive = false;
+            life--;
+            changeLife();
+            if (life <= 0)
+            {
+                //Game Over!
+                gameOver = game.add.sprite(Math.round(width/4), Math.round(heigth/4), 'gameover');
+                gameOver.scale.setTo(blockSize/50,blockSize/50);
+                if (game.paused === false) {game.paused = true;}
+                reset = game.add.sprite(width/4, heigth/2, 'reset');
+                resetState = true;
+                gameOverState = true;
             }
         }
     });
