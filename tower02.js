@@ -1,5 +1,5 @@
 /*
-Tower Defence.
+Tower Defense.
 11x13 game field
 game field is 100,100 x 750x650
 */
@@ -27,14 +27,7 @@ var game = new Phaser.Game(width, heigth, Phaser.AUTO, '', { preload: preload, c
 
 var numbers, selectedTower, selected, selectedInField, bg, blocked, blurX, blurY, bullet, gameOver, bar, timerBar, emitter,towerRange, graphics;
 
-var towerBase = [];
-var gun = [];
-var monsterArray = [];
-var bulletArray = [];
-var gunArray = [];
-var towerBaseArray =[];
-var towerPrice =[];
-var toBeRemoved = [];
+var towerBase = [] ,gun = [] ,monsterArray = [], bulletArray = [], gunArray = [], towerBaseArray =[], towerPrice =[],toBeRemoved = [],pathfinder=[];
 var running = false;
 var resetState = false;
 var gameOverState = false;
@@ -292,8 +285,14 @@ function create(){
     }
 
     //printGrid(fieldArray)
-    pathfinder = game.plugins.add(Phaser.Plugin.PathFinderPlugin);
-    pathfinder.setGrid(swapGrid(fieldArray), 0);
+
+    pathfinder1 = game.plugins.add(Phaser.Plugin.PathFinderPlugin);
+    pathfinder1.setGrid(swapGrid(fieldArray), 0);
+    pathfinder2 = game.plugins.add(Phaser.Plugin.PathFinderPlugin);
+    pathfinder2.setGrid(swapGrid(fieldArray), 0);
+    pathfinder3 = game.plugins.add(Phaser.Plugin.PathFinderPlugin);
+    pathfinder3.setGrid(swapGrid(fieldArray), 0);
+
 
     pathfinderUD = game.plugins.add(Phaser.Plugin.PathFinderPlugin);
     pathfinderLR = game.plugins.add(Phaser.Plugin.PathFinderPlugin);
@@ -1013,38 +1012,130 @@ function bulletHit(bullet,monster){
 
 function calculateNewPath(monster){
     /*
-    Calculates the goto position.
+    Calculates the goto position. Not very elegant.
     */
     monster.newPathFound = false;
-    pathfinder.setGrid(swapGrid(fieldArray), 0);
+    pathfinder1.setGrid(swapGrid(fieldArray), 0);
+    pathfinder1.returned = false;
+    pathfinder2.setGrid(swapGrid(fieldArray), 0);
+    pathfinder2.returned = false;
+    pathfinder3.setGrid(swapGrid(fieldArray), 0);
+    pathfinder3.returned = false;
 
-    pathfinder.setCallbackFunction(function(path)
-    {
-        if (path !== null && path.length !== 0)
-        {
-            monster.path = [];
-            path.forEach(function(pos){
-                monster.path.push([pos.x,pos.y]);
-            });
-            monster.needsUpdate = false;
-            monster.newPathFound = true;
-            monster.goTo[0] = path[1].x;
-            monster.goTo[1] = path[1].y;
-        }
-    });
+    pathfinder1.setCallbackFunction(function(path){
+        if (path !== null && path.length !== 0){
+            pathfinder1.returned = true;
+            pathfinder1.path = path;
+            path = [];
+            if (pathfinder1.returned && pathfinder2.returned && pathfinder3.returned){
+                shortest = 10000;
+                if (pathfinder1.path !== null && pathfinder1.path.length !== 0 &&
+                    pathfinder2.path !== null && pathfinder2.path.length !== 0 &&
+                    pathfinder3.path !== null && pathfinder3.path.length !== 0){
+                    if (pathfinder1.path.length <= pathfinder2.path.length &&
+                        pathfinder1.path.length < pathfinder3.path.length){
+                        path = pathfinder1.path;
+                    }else if (pathfinder2.path.length <= pathfinder1.path.length &&
+                        pathfinder2.path.length < pathfinder3.path.length){
+                        path = pathfinder2.path;
+                    }else{
+                        path = pathfinder3.path;
+                        }
+                    }
+                    monster.path = [];
+                    path.forEach(function(pos){
+                        monster.path.push([pos.x,pos.y]);
+                    });
+                    monster.needsUpdate = false;
+                    monster.newPathFound = true;
+                    monster.goTo[0] = path[1].x;
+                    monster.goTo[1] = path[1].y;
+                }
+            }
+        });
+
+    pathfinder2.setCallbackFunction(function(path){
+        if (path !== null && path.length !== 0){
+            pathfinder2.returned = true;
+            pathfinder2.path = path;
+            path = [];
+            if (pathfinder1.returned && pathfinder2.returned && pathfinder3.returned){
+                shortest = 10000;
+                if (pathfinder1.path !== null && pathfinder1.path.length !== 0 &&
+                    pathfinder2.path !== null && pathfinder2.path.length !== 0 &&
+                    pathfinder3.path !== null && pathfinder3.path.length !== 0){
+                    if (pathfinder1.path.length <= pathfinder2.path.length &&
+                        pathfinder1.path.length < pathfinder3.path.length){
+                        path = pathfinder1.path;
+                    }else if (pathfinder2.path.length <= pathfinder1.path.length &&
+                        pathfinder2.path.length < pathfinder3.path.length){
+                        path = pathfinder2.path;
+                    }else{
+                        path = pathfinder3.path;
+                        }
+                    }
+                    monster.path = [];
+                    path.forEach(function(pos){
+                        monster.path.push([pos.x,pos.y]);
+                    });
+                    monster.needsUpdate = false;
+                    monster.newPathFound = true;
+                    monster.goTo[0] = path[1].x;
+                    monster.goTo[1] = path[1].y;
+                }
+            }
+        });
+
+    pathfinder3.setCallbackFunction(function(path){
+        if (path !== null && path.length !== 0){
+            pathfinder3.returned = true;
+            pathfinder3.path = path;
+            path = [];
+            if (pathfinder1.returned && pathfinder2.returned && pathfinder3.returned){
+                shortest = 10000;
+                if (pathfinder1.path !== null && pathfinder1.path.length !== 0 &&
+                    pathfinder2.path !== null && pathfinder2.path.length !== 0 &&
+                    pathfinder3.path !== null && pathfinder3.path.length !== 0){
+                    if (pathfinder1.path.length <= pathfinder2.path.length &&
+                        pathfinder1.path.length < pathfinder3.path.length){
+                        path = pathfinder1.path;
+                    }else if (pathfinder2.path.length <= pathfinder1.path.length &&
+                        pathfinder2.path.length < pathfinder3.path.length){
+                        path = pathfinder2.path;
+                    }else{
+                        path = pathfinder3.path;
+                        }
+                    }
+                    monster.path = [];
+                    path.forEach(function(pos){
+                        monster.path.push([pos.x,pos.y]);
+                    });
+                    monster.needsUpdate = false;
+                    monster.newPathFound = true;
+                    monster.goTo[0] = path[1].x;
+                    monster.goTo[1] = path[1].y;
+                }
+            }
+        });
 
     currentField = convertReal2Matrix([monster.body.position.x,monster.body.position.y]);
     if (monster.dir === "lr")
     {
         //pathfinder.preparePathCalculation([currentField[0], currentField[1]], [14,7]);
-        pathfinder.preparePathCalculation([currentField[0], currentField[1]], [28,14]);
+        pathfinder1.preparePathCalculation([currentField[0], currentField[1]], [28,11]);
+        pathfinder2.preparePathCalculation([currentField[0], currentField[1]], [28,13]);
+        pathfinder3.preparePathCalculation([currentField[0], currentField[1]], [28,15]);
     }
     else if (monster.dir === "ud")
     {
         //pathfinder.preparePathCalculation([currentField[0], currentField[1]], [7,12]);
-        pathfinder.preparePathCalculation([currentField[0], currentField[1]], [14,24]);
+        pathfinder1.preparePathCalculation([currentField[0], currentField[1]], [12,24]);
+        pathfinder2.preparePathCalculation([currentField[0], currentField[1]], [14,24]);
+        pathfinder3.preparePathCalculation([currentField[0], currentField[1]], [16,24]);
     }
-    pathfinder.calculatePath();
+    pathfinder1.calculatePath();
+    pathfinder2.calculatePath();
+    pathfinder3.calculatePath();
 }
 
 function convertMatrix2Real(pos){
@@ -1180,7 +1271,7 @@ function callbackFunction(variable,callback){
 }
 
 function releaseMonster(){
-    add = Math.floor(Math.random()*3) - 1;
+    add = Math.floor(Math.random()*6) - 1;
     if (Math.floor(Math.random()*10) % 2 === 0){
         // up down
         posX = convertMatrix2Real([14 + add,0])[0];

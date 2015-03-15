@@ -4,7 +4,7 @@ TODO:
 - add more monster versions
 - populate gun type in the right way.
 - make game better balanced
-
+- speed up wave wait.
 - add three path and choose shortest
 
 - make level more compact
@@ -13,7 +13,7 @@ TODO:
         -> play/pause button (maybe left)
         -> gate animation?
         -> upgrade?
-- add anticepating bullet
+- add anticipating bullet
 - add heat seeking bullet
 
 - add more levels
