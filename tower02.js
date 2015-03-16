@@ -285,17 +285,16 @@ function create(){
     }
 
     //printGrid(fieldArray)
-
-    pathfinder1 = game.plugins.add(Phaser.Plugin.PathFinderPlugin);
-    pathfinder1.setGrid(swapGrid(fieldArray), 0);
-    pathfinder2 = game.plugins.add(Phaser.Plugin.PathFinderPlugin);
-    pathfinder2.setGrid(swapGrid(fieldArray), 0);
-    pathfinder3 = game.plugins.add(Phaser.Plugin.PathFinderPlugin);
-    pathfinder3.setGrid(swapGrid(fieldArray), 0);
-
+    for (i=0;i<6;i++){
+        pathfinder[i] = game.plugins.add(Phaser.Plugin.PathFinderPlugin);
+        pathfinder[i].setGrid(swapGrid(fieldArray), 0);
+    }
 
     pathfinderUD = game.plugins.add(Phaser.Plugin.PathFinderPlugin);
     pathfinderLR = game.plugins.add(Phaser.Plugin.PathFinderPlugin);
+
+    //pathfinderUD.enableDiagonals();
+    //pathfinderLR.enableDiagonals();
 
     numbers = game.add.group();
     lifeDigit100 = numbers.create(3 * blockSize + 0 * 0.7 * blockSize, Math.floor(blockSize/10), 'numbers',0); //150
@@ -334,18 +333,11 @@ function create(){
         towerBase[i] = items.create((16 + i % 4) * blockSize,(2 + 2*Math.floor(i/4)) * blockSize, 'guns',8);
         towerBase[i].scale.setTo(blockSize/50,blockSize/50);
         towerBase[i].inputEnabled = true;
-        //gun[i] = items.create((16 + i % 4) * blockSize,(2 + 2*Math.floor(i/4)) * blockSize, 'guns',i);
         gun[i] = items.create(0,0, 'guns',i);
-        //gun[i].scale.setTo(blockSize/50,blockSize/50);
-        //towerBase[i] = items.create(0,0, 'guns',8);
-
         towerBase[i].addChild(gun[i]);
-        //game.world.bringToTop(gun[i]);
-
         towerBase[i].inputEnabled = true;
         towerBase[i].input.enableDrag(false,true,false,false,255,boundsRect = fieldRec1,null);
         towerBase[i].input.enableSnap(blockSize/2, blockSize/2, true, true);
-        //towerBase[i].events.onInputUp.add(selectTower);
 
         towerBase[i].events.onDragStop.add(dragStop,[i,towerBase[i]]);
 
@@ -361,17 +353,12 @@ function create(){
     towerBase[8] = items.create(16 * blockSize,6 * blockSize, 'guns',8);
     towerBase[8].scale.setTo(blockSize/50,blockSize/50);
 
-    //removeTower = items.create(16 * blockSize,6 * blockSize, 'guns',19);
     removeTower = items.create(0,0, 'guns',19);
-    //removeTower.scale.setTo(blockSize/50,blockSize/50);
     towerBase[8].addChild(removeTower);
-    //removeTower.inputEnabled = true;
-    //removeTower.events.onInputDown.add(selectTower);
     towerBase[8].inputEnabled = true;
     towerBase[8].input.enableDrag(false,true,false,false,255,boundsRect = fieldRec1,null);
     towerBase[8].input.enableSnap(blockSize/2, blockSize/2, true, true);
     towerBase[8].events.onDragStop.add(dragStop,[8,towerBase[8]]);
-    //towerBase[9].events.onInputDown.add(selectTower);
 
     guns = game.add.group();
     guns.enableBody = true;
@@ -392,7 +379,33 @@ function create(){
     levelDigit1.scale.setTo(blockSize/50,blockSize/50);
 
 
+    // 28,10+index
 
+    // 12+index,24
+
+    posX = convertMatrix2Real([29,10])[0];
+    posY = convertMatrix2Real([29,10])[1];
+
+    goto_pix = goto_pix = numbers.create(posX,posY, 'guns',18);
+    goto_pix.scale.setTo(blockSize/100,blockSize/100);
+
+    posX = convertMatrix2Real([29,10+5])[0];
+    posY = convertMatrix2Real([29,10+5])[1];
+
+    goto_pix = goto_pix = numbers.create(posX,posY, 'guns',18);
+    goto_pix.scale.setTo(blockSize/100,blockSize/100);
+
+    posX = convertMatrix2Real([12,25])[0];
+    posY = convertMatrix2Real([12,25])[1];
+
+    goto_pix = goto_pix = numbers.create(posX,posY, 'guns',18);
+    goto_pix.scale.setTo(blockSize/100,blockSize/100);
+
+    posX = convertMatrix2Real([12+5,25])[0];
+    posY = convertMatrix2Real([12+5,25])[1];
+
+    goto_pix = goto_pix = numbers.create(posX,posY, 'guns',18);
+    goto_pix.scale.setTo(blockSize/100,blockSize/100);
 }
 
 function dragStop(){
@@ -724,7 +737,6 @@ function click(event){
                     field[0] -= 1;
                     //field[1] -= 1;
                 }
-
             }
             placeX = convertMatrix2Real(field)[0];
             placeY = convertMatrix2Real(field)[1];
@@ -1012,34 +1024,41 @@ function bulletHit(bullet,monster){
 
 function calculateNewPath(monster){
     /*
-    Calculates the goto position. Not very elegant.
+    Calculates the goto position.
     */
     monster.newPathFound = false;
-    pathfinder1.setGrid(swapGrid(fieldArray), 0);
-    pathfinder1.returned = false;
-    pathfinder2.setGrid(swapGrid(fieldArray), 0);
-    pathfinder2.returned = false;
-    pathfinder3.setGrid(swapGrid(fieldArray), 0);
-    pathfinder3.returned = false;
 
-    pathfinder1.setCallbackFunction(function(path){
-        if (path !== null && path.length !== 0){
-            pathfinder1.returned = true;
-            pathfinder1.path = path;
+    pathfinder.forEach(function(element, index, array){
+        element.setGrid(swapGrid(fieldArray), 0);
+        //element.enableDiagonals();
+        element.returned = false;
+
+        element.setCallbackFunction(function(path){
+            element.returned = true;
+            element.path = path;
             path = [];
-            if (pathfinder1.returned && pathfinder2.returned && pathfinder3.returned){
+            complete = true;
+            for (i=0;i<pathfinder.length;i++){
+                if (!pathfinder[i].returned){
+                    complete = false;
+                }
+            }
+            if (complete){
+                // all are returned
+                path_good = true;
+                for (i=0;i<pathfinder.length;i++){
+                    if (pathfinder[i].path === null || pathfinder[i].path.length === 0){
+                        path_good = false;
+                    }
+                }
                 shortest = 10000;
-                if (pathfinder1.path !== null && pathfinder1.path.length !== 0 &&
-                    pathfinder2.path !== null && pathfinder2.path.length !== 0 &&
-                    pathfinder3.path !== null && pathfinder3.path.length !== 0){
-                    if (pathfinder1.path.length <= pathfinder2.path.length &&
-                        pathfinder1.path.length < pathfinder3.path.length){
-                        path = pathfinder1.path;
-                    }else if (pathfinder2.path.length <= pathfinder1.path.length &&
-                        pathfinder2.path.length < pathfinder3.path.length){
-                        path = pathfinder2.path;
-                    }else{
-                        path = pathfinder3.path;
+                path = pathfinder[0].path;
+                if (path_good){
+                    // all paths are okey
+                    for (i=0;i<pathfinder.length;i++){
+                        if (pathfinder[i].path.length <= shortest){
+                            shortest = pathfinder[i].path.length;
+                            path = pathfinder[i].path;
                         }
                     }
                     monster.path = [];
@@ -1053,89 +1072,15 @@ function calculateNewPath(monster){
                 }
             }
         });
-
-    pathfinder2.setCallbackFunction(function(path){
-        if (path !== null && path.length !== 0){
-            pathfinder2.returned = true;
-            pathfinder2.path = path;
-            path = [];
-            if (pathfinder1.returned && pathfinder2.returned && pathfinder3.returned){
-                shortest = 10000;
-                if (pathfinder1.path !== null && pathfinder1.path.length !== 0 &&
-                    pathfinder2.path !== null && pathfinder2.path.length !== 0 &&
-                    pathfinder3.path !== null && pathfinder3.path.length !== 0){
-                    if (pathfinder1.path.length <= pathfinder2.path.length &&
-                        pathfinder1.path.length < pathfinder3.path.length){
-                        path = pathfinder1.path;
-                    }else if (pathfinder2.path.length <= pathfinder1.path.length &&
-                        pathfinder2.path.length < pathfinder3.path.length){
-                        path = pathfinder2.path;
-                    }else{
-                        path = pathfinder3.path;
-                        }
-                    }
-                    monster.path = [];
-                    path.forEach(function(pos){
-                        monster.path.push([pos.x,pos.y]);
-                    });
-                    monster.needsUpdate = false;
-                    monster.newPathFound = true;
-                    monster.goTo[0] = path[1].x;
-                    monster.goTo[1] = path[1].y;
-                }
-            }
-        });
-
-    pathfinder3.setCallbackFunction(function(path){
-        if (path !== null && path.length !== 0){
-            pathfinder3.returned = true;
-            pathfinder3.path = path;
-            path = [];
-            if (pathfinder1.returned && pathfinder2.returned && pathfinder3.returned){
-                shortest = 10000;
-                if (pathfinder1.path !== null && pathfinder1.path.length !== 0 &&
-                    pathfinder2.path !== null && pathfinder2.path.length !== 0 &&
-                    pathfinder3.path !== null && pathfinder3.path.length !== 0){
-                    if (pathfinder1.path.length <= pathfinder2.path.length &&
-                        pathfinder1.path.length < pathfinder3.path.length){
-                        path = pathfinder1.path;
-                    }else if (pathfinder2.path.length <= pathfinder1.path.length &&
-                        pathfinder2.path.length < pathfinder3.path.length){
-                        path = pathfinder2.path;
-                    }else{
-                        path = pathfinder3.path;
-                        }
-                    }
-                    monster.path = [];
-                    path.forEach(function(pos){
-                        monster.path.push([pos.x,pos.y]);
-                    });
-                    monster.needsUpdate = false;
-                    monster.newPathFound = true;
-                    monster.goTo[0] = path[1].x;
-                    monster.goTo[1] = path[1].y;
-                }
-            }
-        });
-
-    currentField = convertReal2Matrix([monster.body.position.x,monster.body.position.y]);
-    if (monster.dir === "lr")
-    {
-        //pathfinder.preparePathCalculation([currentField[0], currentField[1]], [14,7]);
-        pathfinder1.preparePathCalculation([currentField[0], currentField[1]], [28,11]);
-        pathfinder2.preparePathCalculation([currentField[0], currentField[1]], [28,13]);
-        pathfinder3.preparePathCalculation([currentField[0], currentField[1]], [28,15]);
-    }
-    else if (monster.dir === "ud")
-    {
-        //pathfinder.preparePathCalculation([currentField[0], currentField[1]], [7,12]);
-        pathfinder1.preparePathCalculation([currentField[0], currentField[1]], [12,24]);
-        pathfinder2.preparePathCalculation([currentField[0], currentField[1]], [14,24]);
-        pathfinder3.preparePathCalculation([currentField[0], currentField[1]], [16,24]);
-    }
-    pathfinder1.calculatePath();
-    pathfinder2.calculatePath();
-    pathfinder3.calculatePath();
+        currentField = convertReal2Matrix([monster.body.position.x,monster.body.position.y]);
+        //console.log(index);
+        if (monster.dir === "lr"){
+            element.preparePathCalculation([currentField[0], currentField[1]], [29,10+index]);
+        }else if (monster.dir === "ud"){
+            element.preparePathCalculation([currentField[0], currentField[1]], [12+index,25]);
+        }
+        element.calculatePath();
+    });
 }
 
 function convertMatrix2Real(pos){
@@ -1491,24 +1436,16 @@ function update(){
                 }
             }
 
+            deltaX = goToRealX - monX;
+            deltaY = goToRealY - monY;
 
-            //currentField = convertReal2Matrix([monster.body.position.x,monster.body.position.y]);
+            length_vec = Math.sqrt(deltaX*deltaX + deltaY*deltaY);
 
-            //console.log("current: "+monX+","+monY+" - "+currentgoToRealX+","+currentgoToRealY+" goto: "+goToRealX+","+goToRealY+" - "+monster.goTo[0]+","+monster.goTo[1])
-            /*
-            if (monX <= 1.5 * blockSize - blockSizeCorrection){
-                // always first push them into the field.
-                monster.body.velocity.y = 0;
-                monster.body.velocity.x = monster.speed;
+            monster.body.velocity.x = monster.speed * (deltaX/length_vec);
+            monster.body.velocity.y = monster.speed * (deltaY/length_vec);
+            console.log(monster.body.velocity.x+","+monster.body.velocity.y);
 
-            }
-            else if (monY <= 1.5 * blockSize - blockSizeCorrection){
-                // always first push them into the field.
-                monster.body.velocity.x = 0;
-                monster.body.velocity.y = monster.speed;
-
-            }
-            */
+/*
             if (Math.abs(goToRealX - monX) >= Math.abs(goToRealY - monY) ||
                 Math.abs(goToRealX - monX) <= Math.floor(blockSizeCorrection/2)){
                 // move in Y
@@ -1572,7 +1509,6 @@ function update(){
                                 monster.animations.play('move');
                             }
                         }
-
                     }
                 }
             }
@@ -1628,12 +1564,18 @@ function update(){
                 //console.log("Velo: "+monster.body.velocity.x +","+monster.body.velocity.y );
             }
             //console.log("monster pos: "+currentFieldX+" "+currentFieldY)
+            */
         }
+
             // They made it!
-        if (monster !== undefined && (monster.body.position.x >= (matrixSizeX * blockSize/2) - blockSizeCorrection ||
-            monster.body.position.y >= (matrixSizeY * blockSize/2) - blockSizeCorrection )){
+        if (monster !== undefined && (monster.body.position.x >= convertMatrix2Real([29,10])[0] - blockSizeCorrection ||
+            monster.body.position.y >= convertMatrix2Real([12,25])[1] - blockSizeCorrection )){
             monsters.remove(monster,true);
             //monster.alive = false;
+
+            posX =
+            posY =
+
             life--;
             changeLife();
             if (life <= 0)

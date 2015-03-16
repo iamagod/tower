@@ -5,7 +5,10 @@ TODO:
 - populate gun type in the right way.
 - make game better balanced
 - speed up wave wait.
-- add three path and choose shortest
+
+- add diagonal move
+- add pixel goto
+- add diagonal sprites
 
 - make level more compact
         -> towers in right edge
