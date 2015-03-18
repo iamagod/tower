@@ -72,7 +72,7 @@ for (j=0;j<matrixSizeX;j++){
 
 var waves = [
     //max length of waves is 500
-    {order :[6,6,4,4,4],                                     betweenMonstersTime :20 ,betweenWavesTime: 500},
+    {order :[6,4,6,4,6,4],                                     betweenMonstersTime :20 ,betweenWavesTime: 500},
     {order :[4,4,4,4,4],                                     betweenMonstersTime :20 ,betweenWavesTime: 500},
     {order :[5,5,5,5,5],                                     betweenMonstersTime :5 ,betweenWavesTime: 500},
     {order :[3,3,3,3,3],                                     betweenMonstersTime :10 ,betweenWavesTime: 500},
@@ -1143,24 +1143,83 @@ function calculateNewPath(monster){
                         path_good = false;
                     }
                 }
-                shortest = 10000;
+                shortest = pathfinder[0].path.length;
                 path = pathfinder[0].path;
+                paths = [];
                 if (path_good){
                     // all paths are okey
                     for (i=0;i<pathfinder.length;i++){
                         if (pathfinder[i].path.length <= shortest){
+                            if (pathfinder[i].path.length == shortest){
+                                paths.push(pathfinder[i].path);
+                            }
                             shortest = pathfinder[i].path.length;
                             path = pathfinder[i].path;
                         }
                     }
-                    monster.path = [];
-                    path.forEach(function(pos){
-                        monster.path.push([pos.x,pos.y]);
+                    // calculate staightest path by counting how many different coordiantes are used,
+                    // one with least should be straightest.
+                    shortest = 100000;
+                    //console.log("Same length paths: "+paths.length);
+                    returned = 0;
+                    paths.forEach(function(elem, ind, arr){
+                        //console.log(ind);
+                        x_list = [];
+                        y_list = [];
+
+                        for (pos=0; pos < elem.length; pos++){
+                            //console.log(elem[pos]);
+                            x_new = elem[pos].x;
+                            y_new = elem[pos].y;
+                            //console.log(x_new+","+y_new)
+                            xFound = false;
+                            if (x_list.length > 0){
+                                for (i=0;i<x_list.length;i++){
+                                //    console.log("list elem: "+x_list[i]+" looking for "+x_new)
+                                    if (x_list[i] === x_new){
+                                        xFound = true;
+                                    }
+                                }
+                            }
+                            if (!xFound){
+                                x_list.push(x_new);
+                            }
+
+                            yFound = false;
+                            if (y_list.length > 0){
+                                for (i=0;i<y_list.length;i++){
+                                    if (y_list[i] === y_new){
+                                        yFound = true;
+                                    }
+                                }
+                            }
+                            if (!yFound){
+                                y_list.push(y_new);
+                            }
+                        }
+                        //console.log("x num: "+x_list.length);
+                        //console.log("y num: "+y_list.length);
+                        //console.log(ind+": length: "+(x_list.length+y_list.length));
+
+                        if ((x_list.length+y_list.length) < shortest){
+                            //console.log("shortest!")
+                            shortest = x_list.length + y_list.length;
+                            path = elem;
+                        }
+                        returned++;
+
+
+                        if (returned === paths.length){
+                            monster.path = [];
+                            path.forEach(function(pos){
+                                monster.path.push([pos.x,pos.y]);
+                            });
+                            monster.needsUpdate = false;
+                            monster.newPathFound = true;
+                            monster.goTo[0] = path[1].x;
+                            monster.goTo[1] = path[1].y;
+                        }
                     });
-                    monster.needsUpdate = false;
-                    monster.newPathFound = true;
-                    monster.goTo[0] = path[1].x;
-                    monster.goTo[1] = path[1].y;
                 }
             }
         });
