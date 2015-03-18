@@ -6,7 +6,8 @@ TODO:
 - make game better balanced
 - speed up wave wait.
 
-- add diagonal move
+- add diagonal move sprite
+- add choose straight over diagonal in path
 - add pixel goto
 - add diagonal sprites
 

@@ -406,6 +406,31 @@ function create(){
 
     goto_pix = goto_pix = numbers.create(posX,posY, 'guns',18);
     goto_pix.scale.setTo(blockSize/100,blockSize/100);
+
+    posX = convertMatrix2Real([0,10])[0];
+    posY = convertMatrix2Real([0,10])[1];
+
+    goto_pix = goto_pix = numbers.create(posX,posY, 'guns',18);
+    goto_pix.scale.setTo(blockSize/100,blockSize/100);
+
+    posX = convertMatrix2Real([0,15])[0];
+    posY = convertMatrix2Real([0,15])[1];
+
+    goto_pix = goto_pix = numbers.create(posX,posY, 'guns',18);
+    goto_pix.scale.setTo(blockSize/100,blockSize/100);
+
+    posX = convertMatrix2Real([12,0])[0];
+    posY = convertMatrix2Real([12,0])[1];
+
+    goto_pix = goto_pix = numbers.create(posX,posY, 'guns',18);
+    goto_pix.scale.setTo(blockSize/100,blockSize/100);
+
+    posX = convertMatrix2Real([17,0])[0];
+    posY = convertMatrix2Real([17,0])[1];
+
+    goto_pix = goto_pix = numbers.create(posX,posY, 'guns',18);
+    goto_pix.scale.setTo(blockSize/100,blockSize/100);
+
 }
 
 function dragStop(){
@@ -437,8 +462,8 @@ function dragStop(){
             // place a tower?
             if (selectedTower <= 7 ){
                 //if (fieldArray[field[0]][field[1]] === 0 && money >= gunTypes[selectedTower].price){
-                if (fieldArray[field[0]][field[1]] === 0 && fieldArray[field[0]+1][field[1]] === 0 &&
-                    fieldArray[field[0]][field[1]+1] === 0 && fieldArray[field[0]+1][field[1]+1] === 0 &&
+                if (fieldArray[field[0]][field[1]] % 100 === 0 && fieldArray[field[0]+1][field[1]] % 100 === 0 &&
+                    fieldArray[field[0]][field[1]+1] % 100 === 0 && fieldArray[field[0]+1][field[1]+1] % 100 === 0 &&
                     money >= gunTypes[selectedTower].price){
                     temp = [];
                     for (x=0;x<fieldArray.length;x++){
@@ -509,6 +534,22 @@ function dragStop(){
                 fieldArray[field[0]+1][field[1]] = 0;
                 fieldArray[field[0]][field[1]+1] = 0;
                 fieldArray[field[0]+1][field[1]+1] = 0;
+
+                // remove invisible blocks aswell
+                // left up
+                if (fieldArray[field[0] - 1][field[1] ]  === 100){fieldArray[field[0] - 1][field[1] ] = 0;}
+                if  (fieldArray[field[0]][field[1] - 1 ] === 100){fieldArray[field[0]][field[1] - 1 ] = 0;}
+                // left down
+                if (fieldArray[field[0] - 1][field[1] + 1] === 100){fieldArray[field[0] - 1][field[1] + 1] = 0;}
+                if (fieldArray[field[0]][field[1] + 2  ]   === 100){fieldArray[field[0]][field[1] + 2  ] = 0;}
+                // right up
+                if (fieldArray[field[0] + 1][field[1] - 1] === 100){fieldArray[field[0] + 1][field[1] - 1] = 0;}
+                if (fieldArray[field[0] + 2][field[1]]     === 100){fieldArray[field[0] + 2][field[1]] = 0;}
+                //right down
+                if (fieldArray[field[0] + 1][field[1] + 2] === 100){fieldArray[field[0] + 1][field[1] + 2] = 0;}
+                if (fieldArray[field[0] + 2][field[1] + 1] === 100){fieldArray[field[0] + 2][field[1] + 1] = 0;}
+
+
                 monsters.forEachExists(function(monster){
                     monster.needsUpdate = true;
                 });
@@ -692,6 +733,57 @@ function placeTower(){
     fieldArray[checkTowerPos.pos[0]+1][checkTowerPos.pos[1]]   = 99;
     fieldArray[checkTowerPos.pos[0]][checkTowerPos.pos[1]+1]   = 99;
     fieldArray[checkTowerPos.pos[0]+1][checkTowerPos.pos[1]+1] = 99;
+
+    // add invisble corner piece to prevent slipping
+    //01 99  00 00  01 99
+    //99 99  00 00  99 99
+    //00 00  01 99  00 00
+    //00 00  99 99  00 00
+    //01 99  00 00  01 99
+    //99 99  00 00  99 99
+
+    // left up
+    if (fieldArray[checkTowerPos.pos[0] - 1][checkTowerPos.pos[1] - 1] !==  0){
+        if (checkTowerPos.pos[1] > 2 ){
+            fieldArray[checkTowerPos.pos[0]][checkTowerPos.pos[1] - 1 ] = 100;
+        }
+        if (checkTowerPos.pos[0] > 2 ){
+            fieldArray[checkTowerPos.pos[0] - 1][checkTowerPos.pos[1] ] = 100;
+        }
+
+    }
+    // left down
+    if (fieldArray[checkTowerPos.pos[0] - 1][checkTowerPos.pos[1] + 2] !==  0){
+        if (checkTowerPos.pos[0] > 2){
+            fieldArray[checkTowerPos.pos[0] - 1][checkTowerPos.pos[1] + 1] = 100;
+        }
+        if (checkTowerPos.pos[1]  < 21){
+            fieldArray[checkTowerPos.pos[0]][checkTowerPos.pos[1] + 2  ] = 100;
+        }
+    }
+    // right up
+    if (fieldArray[checkTowerPos.pos[0] + 2][checkTowerPos.pos[1] - 1] !==  0 ){
+        if (checkTowerPos.pos[0] < 23){
+            fieldArray[checkTowerPos.pos[0] + 2][checkTowerPos.pos[1]] = 100;
+        }
+        if (checkTowerPos.pos[1] > 2 ){
+            fieldArray[checkTowerPos.pos[0] + 1][checkTowerPos.pos[1] - 1] = 100;
+        }
+    }
+    //right down
+    if (fieldArray[checkTowerPos.pos[0] + 2][checkTowerPos.pos[1] + 2] !==  0){
+        if (checkTowerPos.pos[0]  < 23){
+            fieldArray[checkTowerPos.pos[0] + 2][checkTowerPos.pos[1] + 1] = 100;
+        }
+        if (checkTowerPos.pos[1]  < 21){
+            fieldArray[checkTowerPos.pos[0] + 1][checkTowerPos.pos[1] + 2] = 100;
+        }
+    }
+
+    for (y=0;y<fieldArray.length;y++){
+        console.log(y+": "+fieldArray[y].join());
+    }
+
 
     monsters.forEachExists(function(monster){
         monster.needsUpdate = true;
@@ -1216,7 +1308,7 @@ function callbackFunction(variable,callback){
 }
 
 function releaseMonster(){
-    add = Math.floor(Math.random()*6) - 1;
+    add = Math.floor(Math.random()*6) - 2;
     if (Math.floor(Math.random()*10) % 2 === 0){
         // up down
         posX = convertMatrix2Real([14 + add,0])[0];
@@ -1432,7 +1524,6 @@ function update(){
                     goToRealX = convertMatrix2Real(monster.goTo)[0];
                     goToRealY = convertMatrix2Real(monster.goTo)[1];
                     //console.log(monster.pathPos+":"+monster.path[monster.pathPos]+" goto: "+monster.goTo[0]+","+monster.goTo[1]+" field: "+ goToRealX+","+goToRealY);
-
                 }
             }
 
@@ -1440,12 +1531,45 @@ function update(){
             deltaY = goToRealY - monY;
 
             length_vec = Math.sqrt(deltaX*deltaX + deltaY*deltaY);
+            if (length_vec === 0){
+                length_vec = 1;
+            }
 
             monster.body.velocity.x = monster.speed * (deltaX/length_vec);
             monster.body.velocity.y = monster.speed * (deltaY/length_vec);
-            console.log(monster.body.velocity.x+","+monster.body.velocity.y);
 
-/*
+            if (Math.abs(monster.body.velocity.x) >= Math.abs(monster.body.velocity.y)){
+                // left or right
+                if (monster.type === 4 || monster.type === 6){
+                    if (monster.body.velocity.x > 0){
+                        monster.animations.play('right');
+                    }else{
+                        monster.animations.play('left');
+                        monster.body.velocity.x -= 10;
+                    }
+                }else{
+                    monster.animations.play('move');
+                }
+            }else{
+                // up or down
+                if (monster.type === 4 || monster.type === 6){
+                    if (monster.body.velocity.y > 0){
+                        monster.animations.play('down');
+                    }else{
+                        monster.animations.play('up');
+                        monster.body.velocity.y -= 10;
+                    }
+                }else{
+                    monster.animations.play('move');
+                }
+            }
+
+
+
+
+            //console.log(monster.body.velocity.x+","+monster.body.velocity.y);
+
+            /*
             if (Math.abs(goToRealX - monX) >= Math.abs(goToRealY - monY) ||
                 Math.abs(goToRealX - monX) <= Math.floor(blockSizeCorrection/2)){
                 // move in Y
