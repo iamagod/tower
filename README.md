@@ -7,12 +7,9 @@ TODO:
 - speed up wave wait.
 - add diagonal sprites
 
-- make level more compact
-        -> towers in right edge
-        -> info in edge uppper and lower edge
-        -> play/pause button (maybe left)
-        -> gate animation?
-        -> upgrade?
+- range on drag
+- gate animation?
+
 - add anticipating bullet
 - add heat seeking bullet
 
@@ -25,3 +22,8 @@ TODO:
 - update sound
 
 - explode into new monsters
+
+- add turn around interface for help etc
+
+- add interface for editing all game settings
+- make level size custom
