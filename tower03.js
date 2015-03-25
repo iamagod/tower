@@ -392,6 +392,7 @@ function create(){
 
     symbols = game.add.group();
     startButton = symbols.create(9.5 * blockSize , 12 * blockSize, 'symbols',0);
+    startButton.scale.setTo(blockSize/50,blockSize/50);
 
 
     // location points
@@ -1059,13 +1060,14 @@ function explode(pos,tint){
 
 function bulletHit(bullet,monster){
     // sonic hit
+    console.log("hit");
     if (bullet.towerType % 10 === 2){
         towerLevel = Math.floor(bullet.towerType/10);
         monster.health = Math.floor((6-towerLevel)*monster.health/(7-towerLevel));
     }
     // rocket hit
     else if (bullet.towerType % 10 === 3){
-        // find monster in neigberhood
+        // find monster in neigborhood
         monsters.forEach(function(monsterField){
             if (monsterField !== undefined && monsterField !== monster){
                 X = monsterField.body.position.x - bullet.body.position.x;

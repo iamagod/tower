@@ -9,7 +9,7 @@ TODO:
 
 - range on drag
 - gate animation?
-
+- wave balk fixen
 - add anticipating bullet
 - add heat seeking bullet
 
