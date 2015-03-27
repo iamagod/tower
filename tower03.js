@@ -8,15 +8,15 @@ var h = window.innerHeight; //* window.devicePixelRatio;
 
 console.log(window.devicePixelRatio+" : "+window.innerWidth+","+window.innerHeight);
 
-var LevelX = 13;
-var LevelY = 11;
+var levelX = 13;
+var levelY = 11;
 
 var blockSize;
 
-if (w/(LevelX + 2 + 1) < h/(LevelY + 2)){
-    blockSize = Math.floor(w/(LevelX + 2 + 1));
+if (w/(levelX + 2 + 1) < h/(levelY + 2)){
+    blockSize = Math.floor(w/(levelX + 2 + 1));
 }else{
-    blockSize = Math.floor(h/(LevelY + 2));
+    blockSize = Math.floor(h/(levelY + 2));
 }
 
 //var blockSize = Math.floor((w*3/4)/20);
@@ -28,11 +28,11 @@ console.log("blockSize: "+BS);
 
 var halfBlockSize = Math.floor(blockSize/2);
 
-var matrixSizeX = (LevelX + 2) * 2;
-var matrixSizeY = (LevelY + 2) * 2;
+var matrixSizeX = (levelX + 2) * 2;
+var matrixSizeY = (levelY + 2) * 2;
 
-var width = (LevelX + 2 + 1) * blockSize; //800
-var heigth = (LevelY + 2) * blockSize; //650
+var width = (levelX + 2 + 2) * blockSize; //850
+var heigth = (levelY + 2) * blockSize; //650
 var game = new Phaser.Game(width, heigth, Phaser.AUTO, '', { preload: preload, create: create, update: update });
 
 var numbers, selectedTower, selected, selectedInField, bg, blocked, blurX, blurY, bullet, gameOver, bar, timerBar, emitter,towerRange, graphics,startButton;
@@ -204,12 +204,12 @@ function setupGuns(){
     gunTypes[55] = {price : 640, speed : 20, range : 5   * BS, attackType : "weakest", damage : 35, bulletLife : 1000, bulletSpeed : 6   * BS,bulletImage :18};
 
     // gun 7 slow tower
-    gunTypes[6]  = {price : 25,  speed : 100,range : 3   * BS, attackType : "farest", damage : 0, bulletLife : 500,  bulletSpeed : 4   * BS,bulletImage :15};
-    gunTypes[16] = {price : 35,  speed : 90, range : 3.1 * BS, attackType : "farest", damage : 0, bulletLife : 550,  bulletSpeed : 4.2 * BS,bulletImage :15};
-    gunTypes[26] = {price : 50,  speed : 80, range : 3.2 * BS, attackType : "farest", damage : 0, bulletLife : 600,  bulletSpeed : 4.4 * BS,bulletImage :15};
-    gunTypes[36] = {price : 75,  speed : 70, range : 3.3 * BS, attackType : "farest", damage : 0, bulletLife : 650,  bulletSpeed : 4.6 * BS,bulletImage :15};
-    gunTypes[46] = {price : 100, speed : 60, range : 3.4 * BS, attackType : "farest", damage : 0, bulletLife : 700,  bulletSpeed : 4.8 * BS,bulletImage :15};
-    gunTypes[56] = {price : 200, speed : 30, range : 4.5 * BS, attackType : "farest", damage : 0, bulletLife : 1000, bulletSpeed : 6   * BS,bulletImage :15};
+    gunTypes[6]  = {price : 10,  speed : 100,range : 3   * BS, attackType : "farest", damage : 0, bulletLife : 500,  bulletSpeed : 4   * BS,bulletImage :15};
+    gunTypes[16] = {price : 15,  speed : 90, range : 3.1 * BS, attackType : "farest", damage : 0, bulletLife : 550,  bulletSpeed : 4.2 * BS,bulletImage :15};
+    gunTypes[26] = {price : 25,  speed : 80, range : 3.2 * BS, attackType : "farest", damage : 0, bulletLife : 600,  bulletSpeed : 4.4 * BS,bulletImage :15};
+    gunTypes[36] = {price : 50,  speed : 70, range : 3.3 * BS, attackType : "farest", damage : 0, bulletLife : 650,  bulletSpeed : 4.6 * BS,bulletImage :15};
+    gunTypes[46] = {price : 75, speed : 60, range : 3.4 * BS, attackType : "farest", damage : 0, bulletLife : 700,  bulletSpeed : 4.8 * BS,bulletImage :15};
+    gunTypes[56] = {price : 100, speed : 30, range : 4.5 * BS, attackType : "farest", damage : 0, bulletLife : 1000, bulletSpeed : 6   * BS,bulletImage :15};
 
     // gun 8 anti air
     gunTypes[7]  = {price : 5,   speed : 50, range : 2   * BS, attackType : "closest", damage : 10, bulletLife : 500,  bulletSpeed : 4   * BS,bulletImage :18};
@@ -308,67 +308,70 @@ function create(){
     //pathfinderUD.enableDiagonals();
     //pathfinderLR.enableDiagonals();
 
+    numberDivider = 100;
+    lifePos = 2.5;
+    killPos = 5;
+    moneyPos = 2.5;
+
     numbers = game.add.group();
-    lifeDigit100 = numbers.create(2 * blockSize + 0 * 0.7 * blockSize, -Math.floor(blockSize/10), 'numbers',0); //150
-    lifeDigit10 = numbers.create(2 * blockSize + 1 * 0.7 * blockSize, -Math.floor(blockSize/10), 'numbers',0); //185
-    lifeDigit1 = numbers.create(2 * blockSize + 2 * 0.7 * blockSize, -Math.floor(blockSize/10), 'numbers',0); //220
-    lifeDigit100.scale.setTo(blockSize/50,blockSize/50);
-    lifeDigit10.scale.setTo(blockSize/50,blockSize/50);
-    lifeDigit1.scale.setTo(blockSize/50,blockSize/50);
+    lifeDigit100 = numbers.create(lifePos * blockSize + 0 * 0.35 * blockSize, -Math.floor(blockSize/10), 'numbers',0); //150
+    lifeDigit10 = numbers.create(lifePos * blockSize + 1 * 0.35 * blockSize, -Math.floor(blockSize/10), 'numbers',0); //185
+    lifeDigit1 = numbers.create(lifePos * blockSize + 2 * 0.35 * blockSize, -Math.floor(blockSize/10), 'numbers',0); //220
+    lifeDigit100.scale.setTo(blockSize/numberDivider,blockSize/numberDivider);
+    lifeDigit10.scale.setTo(blockSize/numberDivider,blockSize/numberDivider);
+    lifeDigit1.scale.setTo(blockSize/numberDivider,blockSize/numberDivider);
     changeLife(life);
 
-    killDigit100 = numbers.create(10.5 * blockSize + 0 * 0.7 * blockSize, -Math.floor(blockSize/10), 'numbers',0);
-    killDigit10 = numbers.create(10.5 * blockSize + 1 * 0.7 * blockSize, -Math.floor(blockSize/10), 'numbers',0);
-    killDigit1 = numbers.create(10.5 * blockSize + 2 * 0.7 * blockSize, -Math.floor(blockSize/10), 'numbers',0);
-    killDigit100.scale.setTo(blockSize/50,blockSize/50);
-    killDigit10.scale.setTo(blockSize/50,blockSize/50);
-    killDigit1.scale.setTo(blockSize/50,blockSize/50);
+    killDigit100 = numbers.create(killPos * blockSize + 0 * 0.35 * blockSize, -Math.floor(blockSize/10), 'numbers',0);
+    killDigit10 = numbers.create(killPos * blockSize + 1 * 0.35 * blockSize, -Math.floor(blockSize/10), 'numbers',0);
+    killDigit1 = numbers.create(killPos * blockSize + 2 * 0.35 * blockSize, -Math.floor(blockSize/10), 'numbers',0);
+    killDigit100.scale.setTo(blockSize/numberDivider,blockSize/numberDivider);
+    killDigit10.scale.setTo(blockSize/numberDivider,blockSize/numberDivider);
+    killDigit1.scale.setTo(blockSize/numberDivider,blockSize/numberDivider);
     changeKill(kill);
 
-    moneyDigit1000 = numbers.create(2 * blockSize + 0 * 0.7 * blockSize, -Math.floor(blockSize/10) + 12 * blockSize, 'numbers',0);
-    moneyDigit100 = numbers.create(2 * blockSize + 1 * 0.7 * blockSize, -Math.floor(blockSize/10) + 12 * blockSize, 'numbers',0);
-    moneyDigit10 = numbers.create(2 * blockSize + 2 * 0.7 * blockSize, -Math.floor(blockSize/10) + 12 * blockSize, 'numbers',0);
-    moneyDigit1 = numbers.create(2 * blockSize + 3 * 0.7 * blockSize, -Math.floor(blockSize/10) + 12 * blockSize, 'numbers',0);
-    moneyDigit1000.scale.setTo(blockSize/50,blockSize/50);
-    moneyDigit100.scale.setTo(blockSize/50,blockSize/50);
-    moneyDigit10.scale.setTo(blockSize/50,blockSize/50);
-    moneyDigit1.scale.setTo(blockSize/50,blockSize/50);
+    moneyDigit1000 = numbers.create(moneyPos * blockSize + 0 * 0.35 * blockSize, -Math.floor(blockSize/10) + 0.5 * blockSize, 'numbers',0);
+    moneyDigit100 = numbers.create(moneyPos * blockSize + 1 * 0.35 * blockSize, -Math.floor(blockSize/10) + 0.5 * blockSize, 'numbers',0);
+    moneyDigit10 = numbers.create(moneyPos * blockSize + 2 * 0.35 * blockSize, -Math.floor(blockSize/10) + 0.5 * blockSize, 'numbers',0);
+    moneyDigit1 = numbers.create(moneyPos * blockSize + 3 * 0.35 * blockSize, -Math.floor(blockSize/10) + 0.5 * blockSize, 'numbers',0);
+    moneyDigit1000.scale.setTo(blockSize/numberDivider,blockSize/numberDivider);
+    moneyDigit100.scale.setTo(blockSize/numberDivider,blockSize/numberDivider);
+    moneyDigit10.scale.setTo(blockSize/numberDivider,blockSize/numberDivider);
+    moneyDigit1.scale.setTo(blockSize/numberDivider,blockSize/numberDivider);
     changeMoney(money);
 
-    fieldRec1 = new Phaser.Rectangle(1*BS, 1*BS, 13*BS, 11*BS);
-    fieldRec2 = new Phaser.Rectangle(16*BS, 2*BS, 4*BS, 4*BS);
-    fieldRec = fieldRec1.union(fieldRec2);
+    fieldRec = new Phaser.Rectangle(2*BS, 1*BS, levelX*BS, levelY*BS);
 
     items = game.add.group();
     //towerBase = [];
     for (i=0; i<8;i++){
-        towerBase[i] = items.create((LevelX + 1) * blockSize,(1 + i +Math.floor(i/4)*3) * blockSize, 'guns',8);
+        towerBase[i] = items.create((levelX + 2) * blockSize,(1 + i +Math.floor(i/4)*3) * blockSize, 'guns',8);
         towerBase[i].scale.setTo(blockSize/50,blockSize/50);
         towerBase[i].inputEnabled = true;
         gun[i] = items.create(0,0, 'guns',i);
         towerBase[i].addChild(gun[i]);
         towerBase[i].inputEnabled = true;
-        towerBase[i].input.enableDrag(false,true,false,false,255,boundsRect = fieldRec1,null);
+        towerBase[i].input.enableDrag(false,true,false,false,255,boundsRect = fieldRec,null);
         towerBase[i].input.enableSnap(blockSize/2, blockSize/2, true, true);
 
         towerBase[i].events.onDragStop.add(dragStop,[i,towerBase[i]]);
 
-        gunPrice100 = numbers.create((LevelX + 2) * blockSize,                     (1.3 + i +Math.floor(i/4)*3) * blockSize, 'numbers', Math.floor(gunTypes[i].price / 100));
-        gunPrice10 = numbers.create((LevelX + 2) * blockSize+ 1 * 0.25 * blockSize,(1.3 + i +Math.floor(i/4)*3) * blockSize, 'numbers', Math.floor((gunTypes[i].price%100) / 10));
-        gunPrice1 = numbers.create((LevelX + 2) * blockSize + 2 * 0.25 * blockSize,(1.3 + i +Math.floor(i/4)*3) * blockSize, 'numbers', gunTypes[i].price % 10);
+        gunPrice100 = numbers.create((levelX + 3) * blockSize,                     (1.3 + i +Math.floor(i/4)*3) * blockSize, 'numbers', Math.floor(gunTypes[i].price / 100));
+        gunPrice10 = numbers.create((levelX + 3) * blockSize+ 1 * 0.25 * blockSize,(1.3 + i +Math.floor(i/4)*3) * blockSize, 'numbers', Math.floor((gunTypes[i].price%100) / 10));
+        gunPrice1 = numbers.create((levelX + 3) * blockSize + 2 * 0.25 * blockSize,(1.3 + i +Math.floor(i/4)*3) * blockSize, 'numbers', gunTypes[i].price % 10);
         gunPrice100.scale.setTo(blockSize/130,blockSize/130);
         gunPrice10.scale.setTo(blockSize/130,blockSize/130);
         gunPrice1.scale.setTo(blockSize/130,blockSize/130);
     }
 
 
-    towerBase[8] = items.create(0 * blockSize,9 * blockSize, 'guns',8);
+    towerBase[8] = items.create(1 * blockSize,9 * blockSize, 'guns',8);
     towerBase[8].scale.setTo(blockSize/50,blockSize/50);
 
     removeTower = items.create(0,0, 'guns',19);
     towerBase[8].addChild(removeTower);
     towerBase[8].inputEnabled = true;
-    towerBase[8].input.enableDrag(false,true,false,false,255,boundsRect = fieldRec1,null);
+    towerBase[8].input.enableDrag(false,true,false,false,255,boundsRect = fieldRec,null);
     towerBase[8].input.enableSnap(blockSize/2, blockSize/2, true, true);
     towerBase[8].events.onDragStop.add(dragStop,[8,towerBase[8]]);
 
@@ -380,23 +383,27 @@ function create(){
     bullets.enableBody = true;
     game.input.onDown.add(click, self);
 
-    timeBar = game.add.sprite(12.5 * blockSize, 12.25*blockSize, 'lifeBar');
+    wavePos = 11.5;
+
+    timeBar = game.add.sprite(wavePos * blockSize, 0.5*blockSize, 'lifeBar');
     timeBar.scale.setTo(blockSize/90, blockSize/100);
 
-    levelDigit100 = numbers.create(10 * blockSize + 0.5 * 0.7 * blockSize, -Math.floor(blockSize/10) + 12 * blockSize, 'numbers',0);
-    levelDigit10 = numbers.create(10 * blockSize + 1.5 * 0.7 * blockSize, -Math.floor(blockSize/10) + 12 * blockSize, 'numbers',0);
-    levelDigit1 = numbers.create(10 * blockSize + 2.5 * 0.7 * blockSize, -Math.floor(blockSize/10) + 12 * blockSize, 'numbers',0);
-    levelDigit100.scale.setTo(blockSize/50,blockSize/50);
-    levelDigit10.scale.setTo(blockSize/50,blockSize/50);
-    levelDigit1.scale.setTo(blockSize/50,blockSize/50);
+    levelDigit100 = numbers.create(wavePos * blockSize + 0.5 * 0.35 * blockSize, -Math.floor(blockSize/10) + 0 * blockSize, 'numbers',0);
+    levelDigit10 = numbers.create(wavePos * blockSize + 1.5 * 0.35 * blockSize, -Math.floor(blockSize/10) + 0 * blockSize, 'numbers',0);
+    levelDigit1 = numbers.create(wavePos * blockSize + 2.5 * 0.35 * blockSize, -Math.floor(blockSize/10) + 0 * blockSize, 'numbers',0);
+    levelDigit100.scale.setTo(blockSize/numberDivider,blockSize/numberDivider);
+    levelDigit10.scale.setTo(blockSize/numberDivider,blockSize/numberDivider);
+    levelDigit1.scale.setTo(blockSize/numberDivider,blockSize/numberDivider);
 
     symbols = game.add.group();
-    startButton = symbols.create(9.5 * blockSize , 12 * blockSize, 'symbols',0);
+    startButton = symbols.create(10.5 * blockSize , 0 * blockSize, 'symbols',0);
     startButton.scale.setTo(blockSize/50,blockSize/50);
+    startButton.inputEnabled = true;
+    startButton.events.onInputDown.add(playPress);
 
 
     // location points
-    if (false){
+    if (true){
 
         posX = convertMatrix2Real([29,10])[0];
         posY = convertMatrix2Real([29,10])[1];
@@ -448,6 +455,35 @@ function create(){
     }
 }
 
+function playPress(){
+    //Start button was pressed
+    if (!running){
+        console.log("start pressed");
+        running = true;
+        startButton.frame = 1;
+    }
+    else if(game.paused){
+        game.paused = false;
+        reset.destroy();
+        pauseState = false;
+        resetState = false;
+        console.log("games continue");
+        startButton.frame = 1;
+        //blurX.destroy();
+        //blurY.destroy();
+    }
+    else{
+        game.paused = true;
+        pauseState = true;
+        reset = game.add.sprite(width/4, heigth/2, 'reset');
+        reset.scale.setTo(blockSize/50,blockSize/50);
+        resetState = true;
+        console.log("games paused");
+        startButton.frame = 0;
+        //bg.filters = [blurX, blurY];
+    }
+}
+
 function dragStop(){
     i = this[0];
     tb = this[1];
@@ -459,10 +495,10 @@ function dragStop(){
 
     // return to home pos
     if (i === 8){
-        tb.position.x = 0 * blockSize;
+        tb.position.x = 1 * blockSize;
         tb.position.y = 9 * blockSize;
     }else{
-        tb.position.x = (LevelX + 1) * blockSize;
+        tb.position.x = (levelX + 2) * blockSize;
         tb.position.y = (1 + i +Math.floor(i/4)*3) * blockSize;
     }
 
@@ -477,7 +513,7 @@ function dragStop(){
         upgradeActive = false;
     }
 
-    if (posX >= 1 * blockSize && posX <= (LevelX + 1) * blockSize && posY >= 1 * blockSize && posY <= (LevelY + 1) * blockSize ){
+    if (posX >= 1 * blockSize && posX <= (levelX + 1) * blockSize && posY >= 1 * blockSize && posY <= (levelY + 1) * blockSize ){
         if (pauseState === false && resetState === false){
             field = convertReal2Matrix([posX,posY]);
             //console.log("pos: "+field[0]+" "+field[1]);
@@ -623,7 +659,7 @@ function changeMoney(){
     moneyDigit1.frame = money%10;
 }
 
-function changeLevel(){
+function changelevel(){
     if ( currentWave > 1000) {currentWave = 999;}
     else if (currentWave < 0) {currentWave =0;}
     levelDigit100.frame = Math.floor((currentWave%1000)/100);
@@ -824,8 +860,9 @@ function findInMatrix(array, pos){
 
 function click(event){
     // console.log("click at "+event.x+","+event.y +"\n client "+ event.clientX+","+event.clientY+"\n page "+ event.pageX+","+event.pageY+"\nscreen"+ event.screenX+","+event.screenY);
+
     // Check if we click in field
-    if (event.x > 1 * blockSize && event.x < 14 * blockSize && event.y > 1 * blockSize && event.y < 12 * blockSize &&
+    if (event.x > 2 * blockSize && event.x < (levelX + 2) * blockSize && event.y > 1 * blockSize && event.y < (levelY + 1) * blockSize &&
         pauseState === false && resetState === false){
         field = convertReal2Matrix([event.x,event.y]);
         // Select tower for upgrade and show range
@@ -870,7 +907,7 @@ function click(event){
                 gunPrice1.destroy();
             }
             upgradeActive = true;
-            upgrade = game.add.sprite(0 * blockSize, 3 * blockSize, 'symbols',3);
+            upgrade = game.add.sprite(1 * blockSize, 3 * blockSize, 'symbols',3);
             upgrade.scale.setTo( blockSize/50, blockSize/50);
             //console.log("matrix value "+fieldArray[field[0]][field[1]]);
             upgrade.selectedGunIndex = findInMatrix(gunArray,field);
@@ -891,12 +928,12 @@ function click(event){
                     //upgradeActive = false;
                 }else{
                     upgrade.price = gunTypes[upgrade.newType].price;
-                    gunPrice100 = numbers.create(0 * blockSize,                       4 * blockSize, 'numbers', Math.floor(upgrade.price / 100));
-                    gunPrice10 = numbers.create (0 * blockSize+ 1 * 0.35 * blockSize, 4 * blockSize, 'numbers', Math.floor((upgrade.price % 100) / 10));
-                    gunPrice1 = numbers.create  (0 * blockSize+ 2 * 0.35 * blockSize, 4 * blockSize, 'numbers', upgrade.price % 10);
-                    gunPrice100.scale.setTo(blockSize/100,blockSize/100);
-                    gunPrice10.scale.setTo(blockSize/100,blockSize/100);
-                    gunPrice1.scale.setTo(blockSize/100,blockSize/100);
+                    gunPrice100 = numbers.create(1 * blockSize,                       4 * blockSize, 'numbers', Math.floor(upgrade.price / 100));
+                    gunPrice10 = numbers.create (1 * blockSize+ 1 * 0.35 * blockSize, 4 * blockSize, 'numbers', Math.floor((upgrade.price % 100) / 10));
+                    gunPrice1 = numbers.create  (1 * blockSize+ 2 * 0.35 * blockSize, 4 * blockSize, 'numbers', upgrade.price % 10);
+                    gunPrice100.scale.setTo(blockSize/numberDivider,blockSize/numberDivider);
+                    gunPrice10.scale.setTo(blockSize/numberDivider,blockSize/numberDivider);
+                    gunPrice1.scale.setTo(blockSize/numberDivider,blockSize/numberDivider);
                 }
             }else{
                 console.log("index error");
@@ -920,7 +957,7 @@ function click(event){
     }
 
     // upgrade tower yes   ---  could be linked to upgrade symbol.
-    if (upgradeActive && event.x > 0 * blockSize && event.x < 1 * blockSize &&
+    if (upgradeActive && event.x > 1 * blockSize && event.x < 2 * blockSize &&
                          event.y > 3 * blockSize && event.y < 4.5 * blockSize ){
             if (money < upgrade.price){
                 console.log("no Money");
@@ -970,54 +1007,17 @@ function click(event){
             }
         }
     // upgrade tower no
-    else if (upgradeActive && event.x > 18 * blockSize && event.x < 20 * blockSize &&
-                              event.y > 9 * blockSize && event.y < 10 * blockSize){
-            upgrade.destroy();
-            upgrade = {};
-            gunPrice100.destroy();
-            gunPrice10.destroy();
-            gunPrice1.destroy();
-            upgradeActive = false;
-        }
 
-    // start/pause button
-    if (event.x > 9.5 * blockSize && event.x < 10.5 * blockSize && event.y > 12 * blockSize && event.y < 13 * blockSize ){
-        //Start button was pressed
-        if (!running){
-            console.log("start pressed");
-            running = true;
-            startButton.frame = 1;
-        }
-        else if(game.paused){
-            game.paused = false;
-            reset.destroy();
-            pauseState = false;
-            resetState = false;
-            console.log("games continue");
-            startButton.frame = 1;
-            //blurX.destroy();
-            //blurY.destroy();
-        }
-        else{
-            game.paused = true;
-            pauseState = true;
-            reset = game.add.sprite(width/4, heigth/2, 'reset');
-            reset.scale.setTo(blockSize/50,blockSize/50);
-            resetState = true;
-            console.log("games paused");
-            startButton.frame = 0;
-            //bg.filters = [blurX, blurY];
-        }
-    }
+
     // unpause
-    else if (game.paused && !(event.x >= width/4 && event.x <= width/4 + 7 * blockSize &&
+    if (game.paused && !(event.x >= width/4 && event.x <= width/4 + 7 * blockSize &&
                               event.y >= heigth/2 && event.y<= heigth/2 + 2 * blockSize)){
         game.paused = false;
         reset.destroy();
         pauseState = false;
         resetState = false;
         console.log("games continue");
-        startButton.frame = 0;
+        startButton.frame = 1;
     }
 
     // reset button
@@ -1062,8 +1062,8 @@ function bulletHit(bullet,monster){
     // sonic hit
     console.log("hit");
     if (bullet.towerType % 10 === 2){
-        towerLevel = Math.floor(bullet.towerType/10);
-        monster.health = Math.floor((6-towerLevel)*monster.health/(7-towerLevel));
+        towerlevel = Math.floor(bullet.towerType/10);
+        monster.health = Math.floor((6-towerlevel)*monster.health/(7-towerlevel));
     }
     // rocket hit
     else if (bullet.towerType % 10 === 3){
@@ -1099,9 +1099,10 @@ function bulletHit(bullet,monster){
     else if (bullet.towerType % 10 === 6){
         // change monster speed.
 
-        towerLevel = Math.floor(bullet.towerType/10);
-        monster.speed = Math.floor((6-towerLevel)*monster.speed/(7 - towerLevel));
-        //console.log(monster.speed);
+        towerlevel = Math.floor(bullet.towerType/10);
+        old = monster.speed;
+        monster.speed = (((6-towerlevel)/(7-towerlevel))*monster.speed);
+        //console.log("new" + monster.speed+ " old: "+old+" tl: "+towerlevel);
     }
     else{
         monster.health -= bullet.damage;
@@ -1250,12 +1251,12 @@ function calculateNewPath(monster){
 
 function convertMatrix2Real(pos){
     //console.log("In "+pos[0]+","+pos[1]);
-    fieldX = Math.round((pos[0]) * 0.5 * blockSize);
-    fieldY = Math.round((pos[1]) * 0.5 * blockSize);
-    if (fieldX < 0 * blockSize)
+    fieldX = Math.round(pos[0] * 0.5 * blockSize + 1 * blockSize);
+    fieldY = Math.round(pos[1] * 0.5 * blockSize);
+    /*if (fieldX < 0 * blockSize)
     {fieldX = 0 * blockSize;}
     if (fieldY < 0 * blockSize)
-    {fieldY = 0 * blockSize;}
+    {fieldY = 0 * blockSize;}*/
     //console.log("Out "+fieldX+","+fieldY);
     return [fieldX,fieldY];
 }
@@ -1269,8 +1270,8 @@ function convertReal2Matrix(pos){
     //250 = 8
     //300 = 10
     //350 = 12
-    currentFieldX = Math.floor((Math.round(pos[0]))/(0.5*blockSize)) ;
-    currentFieldY = Math.floor((Math.round(pos[1]))/(0.5*blockSize)) ;
+    currentFieldX = Math.floor(Math.round(pos[0] - 1 * blockSize)/(0.5*blockSize)) ;
+    currentFieldY = Math.floor(Math.round(pos[1])/(0.5*blockSize)) ;
     //console.log("out: "+currentFieldX+" "+currentFieldY);
     if (currentFieldX < 0){
         currentFieldX=0;
@@ -1313,7 +1314,7 @@ function resetGame(){
     //monsterArray = [];
     currentWave = 0;
     currentMonster = 0;
-    changeLevel();
+    changelevel();
     startButton.frame = 0;
 }
 
@@ -1493,7 +1494,7 @@ function update(){
         if (currentMonster >= waves[currentWave % waves.length].order.length){
             currentWave  ++;
 
-            changeLevel();
+            changelevel();
             currentMonster = 0;
             timer  = waves[currentWave % waves.length].betweenWavesTime;
 
