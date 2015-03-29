@@ -13,8 +13,8 @@ var levelY = 11;
 
 var blockSize;
 
-if (w/(levelX + 2 + 1) < h/(levelY + 2)){
-    blockSize = Math.floor(w/(levelX + 2 + 1));
+if (w/(levelX + 2 + 2) < h/(levelY + 2)){
+    blockSize = Math.floor(w/(levelX + 2 + 2));
 }else{
     blockSize = Math.floor(h/(levelY + 2));
 }
@@ -143,10 +143,10 @@ monsterTypes[5] = {
 };
 monsterTypes[6] = {
     // airplane
-    life : 200,
+    life : 100,
     speed : 3 * blockSize,
     image : "monster06",
-    price : 5,
+    price : 20,
     color : 0xff00ff,
 };
 
@@ -452,6 +452,35 @@ function create(){
 
         goto_pix = goto_pix = numbers.create(posX,posY, 'guns',18);
         goto_pix.scale.setTo(blockSize/100,blockSize/100);
+
+
+        //[0, 12], [28,12]);
+        //[14, 0], [14,24]
+
+        posX = convertMatrix2Real([14,0])[0];
+        posY = convertMatrix2Real([14,0])[1];
+
+        goto_pix = goto_pix = numbers.create(posX,posY, 'guns',18);
+        goto_pix.scale.setTo(blockSize/100,blockSize/100);
+
+        posX = convertMatrix2Real([14,25])[0];
+        posY = convertMatrix2Real([14,25])[1];
+
+        goto_pix = goto_pix = numbers.create(posX,posY, 'guns',18);
+        goto_pix.scale.setTo(blockSize/100,blockSize/100);
+
+        posX = convertMatrix2Real([0,12])[0];
+        posY = convertMatrix2Real([0,12])[1];
+
+        goto_pix = goto_pix = numbers.create(posX,posY, 'guns',18);
+        goto_pix.scale.setTo(blockSize/100,blockSize/100);
+
+        posX = convertMatrix2Real([29,12])[0];
+        posY = convertMatrix2Real([29,12])[1];
+
+        goto_pix = goto_pix = numbers.create(posX,posY, 'guns',18);
+        goto_pix.scale.setTo(blockSize/100,blockSize/100);
+
     }
 }
 
@@ -541,7 +570,12 @@ function dragStop(){
                         if (path1 !== null && path1.length !== 0){
                             pathfinderLR.setGrid(swapGrid(temp), 0);
                             pathfinderLR.setCallbackFunction(function(path2){
+
                                 if (path2 !== null && path2.length !== 0){
+                                    for (i=0;i<path2.length;i++){
+                                        console.log(path2[i].x+","+path2[i].y);
+                                    }
+
                                     placeTower();
                                     if (towerRange){
                                         towerRange.destroy();
@@ -552,7 +586,7 @@ function dragStop(){
                                 }
                             });
                             //pathfinderLR.preparePathCalculation([0, 6], [14,6]);
-                            pathfinderLR.preparePathCalculation([0, 12], [28,12]);
+                            pathfinderLR.preparePathCalculation([0, 12], [29,12]);
                             pathfinderLR.calculatePath();
                         }
                         else{
@@ -560,7 +594,7 @@ function dragStop(){
                         }
                     });
                     //pathfinderUD.preparePathCalculation([7, 0], [7,12]);
-                    pathfinderUD.preparePathCalculation([14, 0], [14,24]);
+                    pathfinderUD.preparePathCalculation([14, 0], [14,25]);
                     pathfinderUD.calculatePath();
 
                 }
@@ -632,6 +666,44 @@ function dragStop(){
             }
         }
     }
+}
+
+function makeDiagonal(path){
+    /*
+    function that makes a path given by [[x,y],[x,y],...]
+    diagonal.
+    */
+    found = false;
+    toBeRemoved = [];
+    for (i=0;i<path.length - 2;i++){
+        if (!found){
+            // left up
+            if ((path[i+2].x === path[i].x - 1 && path[i+2].y === path[i].y - 1) ||
+            // left down
+               (path[i+2].x === path[i].x - 1 && path[i+2].y === path[i].y + 1) ||
+            // right up
+               (path[i+2].x === path[i].x + 1 && path[i+2].y === path[i].y - 1) ||
+            // right down
+               (path[i+2].x === path[i].x + 1 && path[i+2].y === path[i].y + 1)){
+                   toBeRemoved.push(i+1);
+                   found = true;
+               }
+            }
+        else{
+            found = false;
+        }
+    }
+    // Remove them
+    index = 0;
+    new_path = [];
+    for (i=0;i<path.length ;i++){
+        if (i === toBeRemoved[index] - index){
+            index++;
+        }else{
+            new_path.push(path[i]);
+        }
+    }
+    return (new_path);
 }
 
 function changeLife(){
@@ -799,7 +871,7 @@ function placeTower(){
     //00 00  99 99  00 00
     //01 99  00 00  01 99
     //99 99  00 00  99 99
-
+    /*
     // left up
     if (fieldArray[checkTowerPos.pos[0] - 1][checkTowerPos.pos[1] - 1] !==  0){
         if (checkTowerPos.pos[1] > 2 ){
@@ -837,11 +909,19 @@ function placeTower(){
             fieldArray[checkTowerPos.pos[0] + 1][checkTowerPos.pos[1] + 2] = 100;
         }
     }
-    /*
-    for (y=0;y<fieldArray.length;y++){
-        console.log(y+": "+fieldArray[y].join());
-    }
     */
+    for (x=0;x<fieldArray[0].length;x++){
+        str = (100 + x).toString().slice(1)+":";
+        for (y=0;y<fieldArray.length;y++){
+            if (fieldArray[y][x] !== 0){
+                str += "#";
+            }else{
+                str += "0";
+            }
+        }
+        console.log(str);
+    }
+
 
 
     monsters.forEachExists(function(monster){
@@ -1025,11 +1105,7 @@ function click(event){
                       event.y >= heigth/2 && event.y<= heigth/2 + 2 * blockSize){
         resetGame();
         reset.destroy();
-        if (gameOverState){
-            //gameOver.remove();
-            gameOver.destroy();
-            gameOverState = false;
-        }
+
         if (game.paused === true){
             game.paused = false;
         }
@@ -1142,7 +1218,7 @@ function calculateNewPath(monster){
 
         element.setCallbackFunction(function(path){
             element.returned = true;
-            element.path = path;
+            element.path = makeDiagonal(path);
             path = [];
             complete = true;
             for (i=0;i<pathfinder.length;i++){
@@ -1154,13 +1230,20 @@ function calculateNewPath(monster){
                 // all are returned
                 path_good = true;
                 for (i=0;i<pathfinder.length;i++){
-                    if (pathfinder[i].path === null || pathfinder[i].path.length === 0){
+                    if (pathfinder[i] === undefined || pathfinder[i].path === null || pathfinder[i].path.length === 0){
                         path_good = false;
                     }
                 }
-                shortest = pathfinder[0].path.length;
-                path = pathfinder[0].path;
-                paths = [];
+                if (pathfinder[0] !== undefined && pathfinder[0].path !== null){
+                    shortest = pathfinder[0].path.length;
+                    path = pathfinder[0].path;
+                    paths = [];
+                }
+                else{
+                    shortest = pathfinder[1].path.length;
+                    path = pathfinder[1].path;
+                    paths = [];
+                }
                 if (path_good){
                     // all paths are okey
                     for (i=0;i<pathfinder.length;i++){
@@ -1226,6 +1309,7 @@ function calculateNewPath(monster){
 
                         if (returned === paths.length){
                             monster.path = [];
+                            path = makeDiagonal(path);
                             path.forEach(function(pos){
                                 monster.path.push([pos.x,pos.y]);
                             });
@@ -1303,6 +1387,11 @@ function resetGame(){
         for (y = 0;y < matrixSizeY;y++){
             fieldArray[x][y] = matrix[Math.floor(y/2) * Math.floor(matrixSizeX/2) + Math.floor(x/2)];
         }
+    }
+    if (gameOverState){
+        //gameOver.remove();
+        gameOver.destroy();
+        gameOverState = false;
     }
     monsters.removeAll();
     bullets.removeAll();
@@ -1794,7 +1883,7 @@ function update(){
         return (monster.alive);
     });*/
 
-
+    toBeRemoved = [];
     // check up on bullets
     for (i=0;i<bullets.length;i++){
         bullet = bullets.getAt(i);

@@ -224,7 +224,7 @@ EasyStar.js = function() {
 	var instances = [];
 	var iterationsPerCalculation = Number.MAX_VALUE;
 	var acceptableTiles;
-	var diagonalsEnabled = true;
+	var diagonalsEnabled = false;
 
 	/**
 	* Sets the collision grid that EasyStar uses.
