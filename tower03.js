@@ -268,6 +268,9 @@ function preload(){
 function create(){
     game.physics.startSystem(Phaser.Physics.ARCADE);
 
+    game.world.setBounds(-2000, -2000, 4000, 4000);
+    cursors = game.input.keyboard.createCursorKeys();
+
     build = game.add.audio('build');
     pop = game.add.audio('pop');
     splash = game.add.audio('splash');
@@ -345,7 +348,11 @@ function create(){
     items = game.add.group();
     //towerBase = [];
     for (i=0; i<8;i++){
-        towerBase[i] = items.create((levelX + 2) * blockSize,(1 + i +Math.floor(i/4)*3) * blockSize, 'guns',8);
+
+        X = (Math.floor(i/4)*(levelX + 1)+1) * blockSize;
+        Y = (   ((((levelY-3)/2)-2))    +(i%2)+Math.floor((i%4)/2)*(levelY - (2+((((levelY-3)/2)-2))) )) * blockSize;
+
+        towerBase[i] = items.create(X,Y, 'guns',8);
         towerBase[i].scale.setTo(blockSize/50,blockSize/50);
         towerBase[i].inputEnabled = true;
         gun[i] = items.create(0,0, 'guns',i);
@@ -356,16 +363,16 @@ function create(){
 
         towerBase[i].events.onDragStop.add(dragStop,[i,towerBase[i]]);
 
-        gunPrice100 = numbers.create((levelX + 3) * blockSize,                     (1.3 + i +Math.floor(i/4)*3) * blockSize, 'numbers', Math.floor(gunTypes[i].price / 100));
-        gunPrice10 = numbers.create((levelX + 3) * blockSize+ 1 * 0.25 * blockSize,(1.3 + i +Math.floor(i/4)*3) * blockSize, 'numbers', Math.floor((gunTypes[i].price%100) / 10));
-        gunPrice1 = numbers.create((levelX + 3) * blockSize + 2 * 0.25 * blockSize,(1.3 + i +Math.floor(i/4)*3) * blockSize, 'numbers', gunTypes[i].price % 10);
+        gunPrice100 = numbers.create(X + (-1 + 2*Math.floor(i/4))*blockSize ,                       Y+0.25 * blockSize, 'numbers', Math.floor(gunTypes[i].price / 100));
+        gunPrice10  = numbers.create(X + (-1 + 2*Math.floor(i/4))*blockSize + 1 * 0.25 * blockSize, Y+0.25 * blockSize, 'numbers', Math.floor((gunTypes[i].price%100) / 10));
+        gunPrice1   = numbers.create(X + (-1 + 2*Math.floor(i/4))*blockSize + 2 * 0.25 * blockSize, Y+0.25 * blockSize, 'numbers', gunTypes[i].price % 10);
         gunPrice100.scale.setTo(blockSize/130,blockSize/130);
         gunPrice10.scale.setTo(blockSize/130,blockSize/130);
         gunPrice1.scale.setTo(blockSize/130,blockSize/130);
     }
 
 
-    towerBase[8] = items.create(1 * blockSize,9 * blockSize, 'guns',8);
+    towerBase[8] = items.create(2 * blockSize,(levelY + 1) * blockSize, 'guns',8);
     towerBase[8].scale.setTo(blockSize/50,blockSize/50);
 
     removeTower = items.create(0,0, 'guns',19);
@@ -527,8 +534,8 @@ function dragStop(){
         tb.position.x = 1 * blockSize;
         tb.position.y = 9 * blockSize;
     }else{
-        tb.position.x = (levelX + 2) * blockSize;
-        tb.position.y = (1 + i +Math.floor(i/4)*3) * blockSize;
+        tb.position.x =  (Math.floor(i/4)*(levelX + 1)+1) * blockSize;
+        tb.position.y = (   ((((levelY-3)/2)-2))    +(i%2)+Math.floor((i%4)/2)*(levelY - (2+((((levelY-3)/2)-2))) )) * blockSize;
     }
 
     selectedTower = i;
@@ -571,10 +578,12 @@ function dragStop(){
                             pathfinderLR.setGrid(swapGrid(temp), 0);
                             pathfinderLR.setCallbackFunction(function(path2){
 
+
                                 if (path2 !== null && path2.length !== 0){
+                                    /*
                                     for (i=0;i<path2.length;i++){
                                         console.log(path2[i].x+","+path2[i].y);
-                                    }
+                                    }*/
 
                                     placeTower();
                                     if (towerRange){
@@ -626,8 +635,8 @@ function dragStop(){
                 fieldArray[field[0]+1][field[1]] = 0;
                 fieldArray[field[0]][field[1]+1] = 0;
                 fieldArray[field[0]+1][field[1]+1] = 0;
-
-                // remove invisible blocks aswell
+                /*
+                // remove invisible blocks as well
                 // left up
                 if (fieldArray[field[0] - 1][field[1] ]  === 100){fieldArray[field[0] - 1][field[1] ] = 0;}
                 if  (fieldArray[field[0]][field[1] - 1 ] === 100){fieldArray[field[0]][field[1] - 1 ] = 0;}
@@ -640,7 +649,7 @@ function dragStop(){
                 //right down
                 if (fieldArray[field[0] + 1][field[1] + 2] === 100){fieldArray[field[0] + 1][field[1] + 2] = 0;}
                 if (fieldArray[field[0] + 2][field[1] + 1] === 100){fieldArray[field[0] + 2][field[1] + 1] = 0;}
-
+                */
 
                 monsters.forEachExists(function(monster){
                     monster.needsUpdate = true;
@@ -1552,6 +1561,28 @@ function update(){
 
     game.physics.arcade.overlap(bullets, monsters, bulletHit, null, this);
     time = timer-counter;
+
+    if (cursors.up.isDown){
+            //game.camera.scale -= 4;
+            console.log(game.world.scale.x);
+            point  = game.world.scale;
+            point.x -= 0.1;
+            point.y -= 0.1;
+            console.log(game.world.scale.x);
+            game.world.scale.setTo(point);
+    }else if (cursors.down.isDown){
+            //game.camera.scale += 4;
+            //game.world.scale.setTo([1,1]);
+            point  = game.world.scale;
+            point.x += 0.1;
+            point.y += 0.1;
+            game.world.scale.setTo(point);
+    }else if (cursors.left.isDown){
+            game.camera.x -= 4;
+    }else if (cursors.right.isDown){
+            game.camera.x += 4;
+    }
+
 
 
     // timer bar

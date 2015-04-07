@@ -32,3 +32,7 @@ TODO:
 
 - divide towers to custom size positions
 - add special blocks, only build on, only move on, and nothing. -> add graphics for them.
+- add wall block and build level with it
+- make level array variable size
+
+- add camera options so we can move on bigger levels / iphone.
