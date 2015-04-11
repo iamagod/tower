@@ -82,6 +82,8 @@ for (j=0;j<matrixSizeX;j++){
 
 var waves = [
     //max length of waves is 500
+    {order :[6,6,6,6,6,6,6],                                 betweenMonstersTime :10 ,betweenWavesTime: 500},
+    {order :[6,5,6,5,6,5,6],                                 betweenMonstersTime :10 ,betweenWavesTime: 500},
     {order :[5,5,5,5,5],                                     betweenMonstersTime :5 ,betweenWavesTime: 500},
     {order :[4,4,4,4,4,4],                                     betweenMonstersTime :20 ,betweenWavesTime: 500},
     {order :[4,5,4,5,4],                                     betweenMonstersTime :20 ,betweenWavesTime: 500},
@@ -143,7 +145,7 @@ monsterTypes[5] = {
 };
 monsterTypes[6] = {
     // airplane
-    life : 100,
+    life : 90,
     speed : 3 * blockSize,
     image : "monster06",
     price : 20,
@@ -183,7 +185,7 @@ function setupGuns(){
     gunTypes[3]  = {price : 120, speed : 100, range : 4   * BS, attackType : "farest", damage : 30, bulletLife : 1500,  bulletSpeed : 6   * BS,bulletImage :16};
     gunTypes[13] = {price : 50,  speed : 90, range : 4.1 * BS, attackType : "farest", damage : 35, bulletLife : 1750,  bulletSpeed : 4.2 * BS,bulletImage :16};
     gunTypes[23] = {price : 100,  speed : 80, range : 4.2 * BS, attackType : "farest", damage : 40, bulletLife : 2000,  bulletSpeed : 4.4 * BS,bulletImage :16};
-    gunTypes[33] = {price : 200, speed : 70, range : 2.3 * BS, attackType : "farest", damage : 45, bulletLife : 2250,  bulletSpeed : 4.6 * BS,bulletImage :16};
+    gunTypes[33] = {price : 200, speed : 70, range : 4.3 * BS, attackType : "farest", damage : 45, bulletLife : 2250,  bulletSpeed : 4.6 * BS,bulletImage :16};
     gunTypes[43] = {price : 300, speed : 60, range : 4.4 * BS, attackType : "farest", damage : 50, bulletLife : 2500,  bulletSpeed : 4.8 * BS,bulletImage :16};
     gunTypes[53] = {price : 400, speed : 40, range : 5   * BS, attackType : "farest", damage : 70, bulletLife : 3000,  bulletSpeed : 6   * BS,bulletImage :16};
 
@@ -212,12 +214,12 @@ function setupGuns(){
     gunTypes[56] = {price : 100, speed : 30, range : 4.5 * BS, attackType : "farest", damage : 0, bulletLife : 1000, bulletSpeed : 6   * BS,bulletImage :15};
 
     // gun 8 anti air
-    gunTypes[7]  = {price : 5,   speed : 50, range : 2   * BS, attackType : "closest", damage : 10, bulletLife : 500,  bulletSpeed : 4   * BS,bulletImage :18};
-    gunTypes[17] = {price : 10,  speed : 45, range : 2.1 * BS, attackType : "closest", damage : 12, bulletLife : 550,  bulletSpeed : 4.2 * BS,bulletImage :18};
-    gunTypes[27] = {price : 20,  speed : 50, range : 2.2 * BS, attackType : "closest", damage : 14, bulletLife : 600,  bulletSpeed : 4.4 * BS,bulletImage :18};
-    gunTypes[37] = {price : 40,  speed : 35, range : 2.3 * BS, attackType : "closest", damage : 16, bulletLife : 650,  bulletSpeed : 4.6 * BS,bulletImage :18};
-    gunTypes[47] = {price : 80,  speed : 30, range : 2.4 * BS, attackType : "closest", damage : 18, bulletLife : 700,  bulletSpeed : 4.8 * BS,bulletImage :18};
-    gunTypes[57] = {price : 250, speed : 20, range : 3   * BS, attackType : "weakest", damage : 35, bulletLife : 1000, bulletSpeed : 6   * BS,bulletImage :18};
+    gunTypes[7]  = {price : 25,  speed : 25, range : 4   * BS, attackType : "air", damage : 30, bulletLife : 2000,  bulletSpeed : 5   * BS,bulletImage :18};
+    gunTypes[17] = {price : 30,  speed : 20, range : 4.1 * BS, attackType : "air", damage : 35, bulletLife : 2500,  bulletSpeed : 5.5 * BS,bulletImage :18};
+    gunTypes[27] = {price : 40,  speed : 15, range : 4.2 * BS, attackType : "air", damage : 40, bulletLife : 3000,  bulletSpeed : 6 * BS,bulletImage :18};
+    gunTypes[37] = {price : 60,  speed : 10, range : 4.3 * BS, attackType : "air", damage : 50, bulletLife : 3500,  bulletSpeed : 6.6 * BS,bulletImage :18};
+    gunTypes[47] = {price : 100, speed : 5,  range : 4.4 * BS, attackType : "air", damage : 60, bulletLife : 4000,  bulletSpeed : 7 * BS,bulletImage :18};
+    gunTypes[57] = {price : 250, speed : 5,  range : 5   * BS, attackType : "air", damage : 80, bulletLife : 5000,  bulletSpeed : 8   * BS,bulletImage :18};
 
     // populate gunTypes Array.
     for (i=0;i<=5;i++){
@@ -410,7 +412,7 @@ function create(){
 
 
     // location points
-    if (true){
+    if (false){
 
         posX = convertMatrix2Real([29,10])[0];
         posY = convertMatrix2Real([29,10])[1];
@@ -529,10 +531,11 @@ function dragStop(){
     posX = tb.position.x;
     posY = tb.position.y;
 
+
     // return to home pos
     if (i === 8){
-        tb.position.x = 1 * blockSize;
-        tb.position.y = 9 * blockSize;
+        tb.position.x = 2 * blockSize;
+        tb.position.y = (levelY + 1) * blockSize;
     }else{
         tb.position.x =  (Math.floor(i/4)*(levelX + 1)+1) * blockSize;
         tb.position.y = (   ((((levelY-3)/2)-2))    +(i%2)+Math.floor((i%4)/2)*(levelY - (2+((((levelY-3)/2)-2))) )) * blockSize;
@@ -950,6 +953,10 @@ function findInMatrix(array, pos){
 function click(event){
     // console.log("click at "+event.x+","+event.y +"\n client "+ event.clientX+","+event.clientY+"\n page "+ event.pageX+","+event.pageY+"\nscreen"+ event.screenX+","+event.screenY);
 
+    // upgrade pos
+    gridPosX = Math.floor(levelX/2) + 5;
+    gridPosY = levelY + 1;
+
     // Check if we click in field
     if (event.x > 2 * blockSize && event.x < (levelX + 2) * blockSize && event.y > 1 * blockSize && event.y < (levelY + 1) * blockSize &&
         pauseState === false && resetState === false){
@@ -996,7 +1003,8 @@ function click(event){
                 gunPrice1.destroy();
             }
             upgradeActive = true;
-            upgrade = game.add.sprite(1 * blockSize, 3 * blockSize, 'symbols',3);
+
+            upgrade = game.add.sprite(gridPosX * blockSize, gridPosY * blockSize, 'symbols',3);
             upgrade.scale.setTo( blockSize/50, blockSize/50);
             //console.log("matrix value "+fieldArray[field[0]][field[1]]);
             upgrade.selectedGunIndex = findInMatrix(gunArray,field);
@@ -1017,9 +1025,9 @@ function click(event){
                     //upgradeActive = false;
                 }else{
                     upgrade.price = gunTypes[upgrade.newType].price;
-                    gunPrice100 = numbers.create(1 * blockSize,                       4 * blockSize, 'numbers', Math.floor(upgrade.price / 100));
-                    gunPrice10 = numbers.create (1 * blockSize+ 1 * 0.35 * blockSize, 4 * blockSize, 'numbers', Math.floor((upgrade.price % 100) / 10));
-                    gunPrice1 = numbers.create  (1 * blockSize+ 2 * 0.35 * blockSize, 4 * blockSize, 'numbers', upgrade.price % 10);
+                    gunPrice100 = numbers.create((gridPosX +1) * blockSize,            (gridPosY+0.25) * blockSize, 'numbers', Math.floor(upgrade.price / 100));
+                    gunPrice10 = numbers.create ((gridPosX +1 + 1 * 0.35) * blockSize, (gridPosY+0.25) * blockSize, 'numbers', Math.floor((upgrade.price % 100) / 10));
+                    gunPrice1 = numbers.create  ((gridPosX +1 + 2 * 0.35) * blockSize, (gridPosY+0.25) * blockSize, 'numbers', upgrade.price % 10);
                     gunPrice100.scale.setTo(blockSize/numberDivider,blockSize/numberDivider);
                     gunPrice10.scale.setTo(blockSize/numberDivider,blockSize/numberDivider);
                     gunPrice1.scale.setTo(blockSize/numberDivider,blockSize/numberDivider);
@@ -1046,8 +1054,8 @@ function click(event){
     }
 
     // upgrade tower yes   ---  could be linked to upgrade symbol.
-    if (upgradeActive && event.x > 1 * blockSize && event.x < 2 * blockSize &&
-                         event.y > 3 * blockSize && event.y < 4.5 * blockSize ){
+    if (upgradeActive && event.x > gridPosX * blockSize && event.x < (gridPosX + 2) * blockSize &&
+                         event.y > gridPosY * blockSize && event.y < (gridPosY + 1) * blockSize ){
             if (money < upgrade.price){
                 console.log("no Money");
                 noMoney.alpha = 0.8;
@@ -1188,6 +1196,15 @@ function bulletHit(bullet,monster){
         old = monster.speed;
         monster.speed = (((6-towerlevel)/(7-towerlevel))*monster.speed);
         //console.log("new" + monster.speed+ " old: "+old+" tl: "+towerlevel);
+    }
+    else if (bullet.towerType % 10 === 7){
+        // anti air
+        if (monster.type === 6){
+            monster.health -= 2 * bullet.damage;
+        }
+        else{
+            monster.health -= 0.1 * bullet.damage;
+        }
     }
     else{
         monster.health -= bullet.damage;
@@ -1475,6 +1492,32 @@ function attackStrongestMonster(gun){
     return monsterToAttack;
 }
 
+function attackAirMonster(gun){
+    var monsterToAttack = null;
+    for (i=0;i<monsters.length;i++){
+        monster = monsters.getAt(i);
+        delta = game.physics.arcade.distanceBetween(gun,monster);
+        //console.log("Delta: "+delta);
+        if ( delta < gun.range && monster.type === 6 && delta < closest){
+            closest = delta;
+            monsterToAttack = monster;
+        }
+    }
+    if (monsterToAttack === null){
+        // no air monster so pickclosest
+        for (i=0;i<monsters.length;i++){
+            monster = monsters.getAt(i);
+            delta = game.physics.arcade.distanceBetween(gun,monster);
+            //console.log("Delta: "+delta);
+            if ( delta < gun.range && delta < closest){
+                closest = delta;
+                monsterToAttack = monster;
+            }
+        }
+    }
+    return monsterToAttack;
+}
+
 function callbackFunction(variable,callback){
     //console.log(variable);
     callback();
@@ -1562,28 +1605,6 @@ function update(){
     game.physics.arcade.overlap(bullets, monsters, bulletHit, null, this);
     time = timer-counter;
 
-    if (cursors.up.isDown){
-            //game.camera.scale -= 4;
-            console.log(game.world.scale.x);
-            point  = game.world.scale;
-            point.x -= 0.1;
-            point.y -= 0.1;
-            console.log(game.world.scale.x);
-            game.world.scale.setTo(point);
-    }else if (cursors.down.isDown){
-            //game.camera.scale += 4;
-            //game.world.scale.setTo([1,1]);
-            point  = game.world.scale;
-            point.x += 0.1;
-            point.y += 0.1;
-            game.world.scale.setTo(point);
-    }else if (cursors.left.isDown){
-            game.camera.x -= 4;
-    }else if (cursors.right.isDown){
-            game.camera.x += 4;
-    }
-
-
 
     // timer bar
     if (running  && (time % 5 ===0  )){
@@ -1636,6 +1657,9 @@ function update(){
         }
         else if (gun.attackType === "strongest"){
             monsterToAttack = attackStrongestMonster(gun);
+        }
+        else if (gun.attackType === "air"){
+            monsterToAttack = attackAirMonster(gun);
         }
         else{
             monsterToAttack = attackClosestMonster(gun);
