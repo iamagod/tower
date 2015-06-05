@@ -2,6 +2,9 @@
 Tower Defense.
 11x13 game field
 game field is 100,100 x 750x650
+
+
+https://mikolalysenko.github.io/l1-path-finder/www/?utm_content=buffer85f4f&utm_medium=social&utm_source=twitter.com&utm_campaign=buffer
 */
 var w = window.innerWidth; //* window.devicePixelRatio,
 var h = window.innerHeight; //* window.devicePixelRatio;
@@ -214,12 +217,12 @@ function setupGuns(){
     gunTypes[56] = {price : 100, speed : 30, range : 4.5 * BS, attackType : "farest", damage : 0, bulletLife : 1000, bulletSpeed : 6   * BS,bulletImage :15};
 
     // gun 8 anti air
-    gunTypes[7]  = {price : 25,  speed : 25, range : 4   * BS, attackType : "air", damage : 30, bulletLife : 2000,  bulletSpeed : 5   * BS,bulletImage :18};
-    gunTypes[17] = {price : 30,  speed : 20, range : 4.1 * BS, attackType : "air", damage : 35, bulletLife : 2500,  bulletSpeed : 5.5 * BS,bulletImage :18};
-    gunTypes[27] = {price : 40,  speed : 15, range : 4.2 * BS, attackType : "air", damage : 40, bulletLife : 3000,  bulletSpeed : 6 * BS,bulletImage :18};
-    gunTypes[37] = {price : 60,  speed : 10, range : 4.3 * BS, attackType : "air", damage : 50, bulletLife : 3500,  bulletSpeed : 6.6 * BS,bulletImage :18};
-    gunTypes[47] = {price : 100, speed : 5,  range : 4.4 * BS, attackType : "air", damage : 60, bulletLife : 4000,  bulletSpeed : 7 * BS,bulletImage :18};
-    gunTypes[57] = {price : 250, speed : 5,  range : 5   * BS, attackType : "air", damage : 80, bulletLife : 5000,  bulletSpeed : 8   * BS,bulletImage :18};
+    gunTypes[7]  = {price : 25,  speed : 25, range : 4   * BS, attackType : "air", damage : 30, bulletLife : 2000,  bulletSpeed : 5   * BS,bulletImage :16};
+    gunTypes[17] = {price : 30,  speed : 20, range : 4.1 * BS, attackType : "air", damage : 35, bulletLife : 2500,  bulletSpeed : 5.5 * BS,bulletImage :16};
+    gunTypes[27] = {price : 40,  speed : 15, range : 4.2 * BS, attackType : "air", damage : 40, bulletLife : 3000,  bulletSpeed : 6 * BS,bulletImage :16};
+    gunTypes[37] = {price : 60,  speed : 10, range : 4.3 * BS, attackType : "air", damage : 50, bulletLife : 3500,  bulletSpeed : 6.6 * BS,bulletImage :16};
+    gunTypes[47] = {price : 100, speed : 5,  range : 4.4 * BS, attackType : "air", damage : 60, bulletLife : 4000,  bulletSpeed : 7 * BS,bulletImage :16};
+    gunTypes[57] = {price : 250, speed : 5,  range : 5   * BS, attackType : "air", damage : 80, bulletLife : 5000,  bulletSpeed : 8   * BS,bulletImage :16};
 
     // populate gunTypes Array.
     for (i=0;i<=5;i++){

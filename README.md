@@ -8,6 +8,8 @@ TODO:
 - add diagonal sprites
 - explode into new monsters
 
+- better pathfinder https://mikolalysenko.github.io/l1-path-finder/www/?utm_content=buffer85f4f&utm_medium=social&utm_source=twitter.com&utm_campaign=buffer
+
 - make game better balanced
 
 - fix path finder bug / problem
